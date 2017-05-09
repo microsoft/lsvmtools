@@ -1,0 +1,9 @@
+
+
+    efibootmgr
+
+    # Delete the 0004 boot option.
+    efibootmgr -b 4 -B
+
+    # Add new boot entry:
+    efibootmgr -c -g -d /dev/sda -p 1 -w -L lsvmload -l /EFI/boot/lsvmloadx64.efi

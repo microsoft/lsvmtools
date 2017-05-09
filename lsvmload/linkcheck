@@ -1,0 +1,14 @@
+#!/bin/bash
+
+tmpfile=`/bin/mktemp`
+
+nm lsvmload.so | grep "\<U\>" | grep -v "vendor_dbx_size_priv" | grep -v "vendor_cert_size_priv" | sed 's/^[ \t]*\<U\>/unresolved reference:/g' > ${tmpfile}
+
+grep "unresolved reference" ${tmpfile}
+
+if [ "$?" == "0" ]; then
+    rm -f ${tmpfile}
+    exit 1
+fi
+
+rm -f ${tmpfile}

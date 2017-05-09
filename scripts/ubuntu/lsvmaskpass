@@ -1,0 +1,42 @@
+#!/bin/sh
+
+lsvmaskpass()
+{
+    if [ -z "${cryptsource}" ]; then
+        echo "$0: cryptsource environment variable undefined" > /dev/stderr
+        return 1
+    fi
+
+    if [ -z "${crypttarget}" ]; then
+        echo "$0: crypttarget environment variable undefined" > /dev/stderr
+        return 1
+    fi
+
+    if [ "${crypttarget}" == "boot" ]; then
+        keyfile="/etc/lsvmload/bootkey";
+    else
+        keyfile="/etc/lsvmload/rootkey";
+    fi
+
+    if [ ! -f "${keyfile}" ]; then
+        echo "$0: keyfile does not exist: $keyfile" > /dev/stderr
+        return 1
+    fi
+
+    cat ${keyfile} | /sbin/cryptsetup luksOpen --test-passphrase --key-file=- ${cryptsource} ${crypttarget}
+
+    if [ "$?" != "0" ]; then
+        echo "$0: invalid passphrase: $keyfile" > /dev/stderr
+        return 1
+    fi
+
+    cat $keyfile
+
+    return 0
+}
+
+lsvmaskpass
+
+if [ "$?" != "0" ]; then
+    /lib/cryptsetup/askpass "Please unlock disk: "
+fi

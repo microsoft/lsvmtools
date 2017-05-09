@@ -1,0 +1,4 @@
+#!/bin/bash
+#kr1=`grep '\<linux\>.*/vmlinuz-' /boot/grub/grub.cfg | head -n 1 | sed 's/.*vmlinuz-//g' | sed 's/-generic.*/-generic/g'`
+kernelrelease=`ls /boot/vmlinuz-* | sort | tail -1 | sed 's/.*vmlinuz-//g' | sed 's/-generic.*/-generic/g'`
+echo $kernelrelease

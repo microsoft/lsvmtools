@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ "$#" != "2" ]; then
+	printf "Usage: $0 <DEST> <GIT REPO>\n" 
+	exit 1
+fi
+
+DEST="$1"
+GITADDR="$2"
+
+rm -rf vmshield vmshield.tar.gz
+git clone $GITADDR
+tar czf vmshield.tar.gz vmshield
+scp vmshield.tar.gz $DEST:~
+ssh -t $DEST 'rm -rf vmshield && tar xf vmshield.tar.gz && cd vmshield && sudo ./scripts/dev/getdeps && ./configure && make && sudo make install && cd /opt/lsvmtools-1.0.0 && sudo ./lsvmprep && sleep 3'

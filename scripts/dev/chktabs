@@ -1,0 +1,15 @@
+#!/bin/bash
+
+TAB=`echo -e '\t'`
+
+for i
+do
+    MSG=`grep -H -n -m 1 "$TAB" $i | sed 's/:\([0-9][0-9]*\):.*/(\1)/g'`
+    grep -q "$TAB" $i
+    if [ "$?" == "0" ]; then
+        echo "$MSG: illegal tab character"
+        exit 1
+    fi
+done
+
+exit 0

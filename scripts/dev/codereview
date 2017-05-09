@@ -1,0 +1,8 @@
+#!/bin/bash
+for i
+do
+    cp $i $i.codereview
+    echo "/*CODEREVIEW*/" >> $i.codereview
+    cp $i.codereview $i
+    rm -f $i.codereview
+done

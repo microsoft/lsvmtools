@@ -1,0 +1,123 @@
+#!/bin/bash
+
+top=../..
+
+if [ "$#" != "0" ]; then
+    echo "Usage: $0"
+    exit 1
+fi
+
+install_file()
+{
+    local src=$1
+    local dest=$2
+
+    # Check arguments:
+    if [ "$#" != 2 ]; then
+        echo "$0: $FUNCNAME(): wrong # of args"
+        exit 1
+    fi
+
+    # Install the file:
+    # echo install -D $src $dest
+    install -D $src $dest
+
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to patch $dest"
+        exit 1
+    fi
+}
+
+patch_module()
+{
+    local module=$1
+
+    # Check arguments:
+    if [ "$#" != 1 ]; then
+        echo "$0: $FUNCNAME(): wrong # of args"
+        exit 1
+    fi
+
+    grep -q "\<$module\>" /etc/initramfs-tools/modules
+
+    if [ "$?" != "0" ]; then
+       echo $module >> /etc/initramfs-tools/modules 
+    fi
+}
+
+install_lsvmaskpass()
+{
+    local dirname=/lib/cryptsetup/scripts
+    local filename=lsvmaskpass
+
+    if [ ! -d "${dirname}" ]; then
+        echo "$0: no such directory: ${dirname}"
+        return 1
+    fi
+
+    if [ ! -f "${filename}" ]; then
+        echo "$0: no such file: ${filename}"
+        return 1
+    fi
+
+    cp lsvmaskpass ${dirname}/lsvmaskpass
+    chmod +x ${dirname}/lsvmaskpass
+
+    if [ ! -x ${dirname}/lsvmaskpass ]; then
+        echo "$0: failed to install ${filename}"
+        return 1
+    fi
+
+    return 0
+}
+
+share=/usr/share/initramfs-tools
+echo "Patching ${share}"
+
+install_file patch_cryptroot.hook $share/hooks/patch_cryptroot 
+install_file ${top}/scripts/blkdev_utils $share/hooks/blkdev_utils
+
+install_lsvmaskpass
+if [ "$?" != "0" ]; then
+    exit 1
+fi
+
+install_file lsvmaskpass.hook $share/hooks/lsvmaskpass
+
+install_file chown.hook $share/hooks/chown
+
+install_file insmod.hook $share/hooks/insmod
+
+etc=/etc/initramfs-tools
+echo "Patching ${etc}"
+
+patch_module tpm_crb
+
+install_lsvmspecialize()
+{
+    local dirname=/usr/share/initramfs-tools/scripts/init-bottom
+    local src=lsvmspecialize
+    local dest=${dirname}/lsvmspecialize
+
+    if [ ! -d "${dirname}" ]; then
+        echo "$0: no such directory: ${dirname}"
+        return 1
+    fi
+
+    if [ ! -f "${src}" ]; then
+        echo "$0: no such file: ${src}"
+        return 1
+    fi
+
+    cp ${src} ${dest}
+    chmod +x ${dest}
+
+    if [ ! -x ${dest} ]; then
+        echo "$0: failed to install ${dest}"
+        return 1
+    fi
+
+    return 0
+}
+
+#install_lsvmspecialize

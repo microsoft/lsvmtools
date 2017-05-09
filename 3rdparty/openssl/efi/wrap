@@ -1,0 +1,27 @@
+#!/bin/sh
+
+##==============================================================================
+##
+## Put conditional EFIBUILD wrapper around the given source file
+##
+##==============================================================================
+
+if [ "$#" != "1" ]; then
+    echo "Usage: $0 sourcefile"
+    exit 1
+fi
+
+if [ ! -f "$1" ]; then 
+    echo "$0: no such file"
+    exit 1
+fi
+
+grep EFIBUILD $1 2> /dev/null > /dev/null
+
+if [ "$?" != "0" ]; then
+    cp $1 $1.bak
+    rm -f $1
+    echo "#if !defined(EFIBUILD)" >> $1
+    cat $1.bak >> $1
+    echo "#endif /* !defined(EFIBUILD) */" >> $1
+fi

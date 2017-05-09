@@ -1,0 +1,10 @@
+
+   - The contents of the SecureBoot variable
+   - The contents of the PK variable
+   - The contents of the KEK variable
+   - The contents of the EFI_IMAGE_SECURITY_DATABASE (db) variable
+   - The contents of the EFI_IMAGE_SECURITY_DATABASE1 (dbx) variable
+
+Did not see these as expected:
+   - Separator
+   - Entries in the EFI_IMAGE_SECURITY_DATABASE that are used to validate EFI Drivers or EFI Boot Applications in the boot path

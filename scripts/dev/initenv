@@ -1,0 +1,33 @@
+#!/bin/bash
+root=../..
+
+cp bashrc $HOME/.bashrclsvm
+
+grep bashrclsvm $HOME/.bashrc
+
+if [ "$?" != "0" ]; then
+    echo "source $HOME/.bashrclsvm" >> $HOME/.bashrc
+fi
+
+source $HOME/.bashrclsvm
+
+cp vimrc $HOME/.vimrc
+mkdir -p $HOME/bin
+cp sub $HOME/bin/sub
+cp gcc $HOME/bin/gcc
+
+( cd $root/lsvmtool; sd; sd tool )
+( cd $root/policy; sd; sd p )
+( cd $root/lsvmload; sd; sd load )
+( cd $root/lsvmutils; sd; sd ut )
+( cd $root/3rdparty/zlib; sd )
+( cd $root/3rdparty/xz; sd )
+( cd $root/scripts; sd; sd s )
+( cd $root/doc/howto; sd; sd h )
+( cd $root; sd; sd r )
+( cd /boot/efi/EFI/boot; sd )
+
+git config --global push.default matching
+
+export LSVMPREP_SEAL=1
+export LSVMPREP_DBXUPDATE=1

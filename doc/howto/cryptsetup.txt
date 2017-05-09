@@ -1,0 +1,37 @@
+
+    Using cryptsetup to create an encrypted file system:
+    ====================================================
+
+    $ wipefs -a <target device>
+
+    $ cat /dev/zero > <target device>
+
+    $ cryptsetup luksFormat <target device>
+
+    $ cryptsetup luksDump <target device>
+
+    $ cryptsetup luksOpen <target device> c1 # creates /dev/mapper/c1
+
+    $ mke2fs -j /dev/mapper/c1
+
+    $ mount /dev/mapper/c1 /mnt
+
+    Creating a loop-device:
+    =======================
+    head -c 100M /dev/zero > luksfile  # create empty file
+    losetup /dev/loop0 luksfile        # map luksfile to /dev/loop0
+    cryptsetup luksFormat --key-size 512 --hash sha256 /dev/loop0
+    cryptsetup luksOpen /dev/loop0 luks
+    mke2fs -j /dev/mapper/luks
+    mount /dev/mapper/luks /mnt/luks
+
+    Detaching a loop device:
+    ========================
+    losetup -d /dev/loop0 # unmap
+
+    LUKS/TPM
+    ========
+
+    https://github.com/shpedoikal/tpm-luks
+
+cryptsetup -v --cipher aes-xts-plain64 --key-size 256 --hash sha1 --iter-time 1000 --use-urandom --verify-passphrase luksFormat <device>

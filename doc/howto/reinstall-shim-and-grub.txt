@@ -1,0 +1,12 @@
+
+    # apt-get remove shim
+    # apt-get remove shim-signed
+    # apt-get install shim-signed
+    # grub-install
+
+    # cp /usr/lib/shim/shim.efi.signed /boot/efi/EFI/ubuntu/shimx64.efi
+    # cp /usr/lib/grub/x86_64-efi-signed/grubx64.efi.signed /boot/efi/EFI/ubuntu/grubx64.efi
+    # grub-mkconfig > /boot/grub/grub.cfg
+
+    sudo update-grub
+    sudo grub-install /dev/sda

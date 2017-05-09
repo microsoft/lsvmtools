@@ -1,0 +1,8 @@
+:highlight Comment ctermfg=green
+set shiftwidth=4
+set nowrapscan
+set autoindent
+set expandtab
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+endif

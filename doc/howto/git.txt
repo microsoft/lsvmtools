@@ -1,0 +1,13 @@
+
+
+    Setting your username:
+
+	git config credential.https://github.com.username USERNAME
+
+    Cache your creds next time you type them:
+
+	git config --global credential.helper "cache --timeout=3600"
+
+    Checking out by date (this was the day GRUB was removed)
+
+        git checkout `git rev-list -n 1 --before="2016-07-07 24:00:00" master

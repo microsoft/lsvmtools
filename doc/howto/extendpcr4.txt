@@ -1,0 +1,5 @@
+UEFI extends PCR[4] as follows (from zeros):
+
+    Extend(PCR4, SHA1(00000000))
+    Extend(PCR4, PEHASH(shimx64.efi)
+

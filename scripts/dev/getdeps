@@ -1,0 +1,141 @@
+#!/bin/bash
+
+install_package()
+{
+    local package=$1
+    echo "=== Checking $package"
+    echo $repo $package
+    $repo $package
+
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to install package: $package"
+        exit 1
+    fi
+}
+
+uninstall_package()
+{
+    local package=$1
+    echo "=== Uninstalling $package"
+    apt-get -y -qq remove $package
+
+    if [ "$?" != "0" ]; then
+        echo "$0: failed to uninstall package: $package"
+        exit 1
+    fi
+}
+
+command=install_package
+distro=$(${0%/*}/distroname)
+distro_ver=$(grep "VERSION_ID" /etc/os-release | cut -d "=" -f2 | sed 's/\"//g')
+distro_major_version=$(echo $distro_ver | cut -d "." -f1)
+distro_minor_version=$(echo $distro_ver | cut -d "." -f2)
+
+echo "Configuring for $distro"
+case "$distro" in
+    centos|rhel) 
+        if (( $distro_major_version < 7 )); then
+            printf "$0: Unsupported RHEL/CentOS version (Need atleast 7.3)\n"
+            exit 1
+        elif (( $distro_major_version == 7 && $distro_minor_version < 3 )); then
+            printf "$0: Unsupported RHEL/CentOS version (Need atleast 7.3)\n"
+            exit 1
+        fi
+
+        if [[ "$distro" == rhel ]]; then
+            yum repolist | grep -q "rhel-$distro_major_version-server-optional-rpms"
+            if [[ !$? ]]; then
+                subscription-manager repos --enable=rhel-7-server-optional-rpms 
+            fi
+        fi
+
+        # Update to install latest packages
+	yum update
+	
+        repo="yum install -q -y"
+        $command deltarpm
+        $command make
+        $command gcc
+        $command openssl
+        $command openssl-devel
+        $command gnu-efi
+        $command gnu-efi-devel
+        $command libgcrypt-devel
+        $command bc
+        $command glibc-static
+        $command wget
+        $command perl
+	$command git
+	$command libxml2-devel
+
+        # Not found by yum
+        wget https://www.samba.org/ftp/ccache/ccache-3.3.1.tar.gz
+        tar -xzf ccache-3.3.1.tar.gz
+        (cd ccache-3.3.1 && ./configure && make && make install)
+        rm -rf ccache-3.3.1.tar.gz ccache-3.3.1
+        ;;
+    ubuntu)
+        if (( $distro_major_version < 14 )); then
+            printf "$0: Unsupported Ubuntu version (Need atleast 14)\n"
+            exit 1
+        fi
+
+        # Update to install latest packages
+        apt-get update
+
+        repo="apt-get install -y -qq"
+        $command make
+        $command gcc
+        $command openssl
+        $command libssl-dev
+        $command gnu-efi
+        $command ccache
+        $command libgcrypt11-dev
+        $command bc
+	$command libxml2-dev
+        ;;
+    sles)
+        if (( $distro_major_version < 12 )); then
+            printf "$0: Unsupported SLES version (Need atleast 12-SP2)\n"
+            exit 1
+        elif (( $distro_major_version == 12 && $distro_minor_version < 2 )); then
+            printf "$0: Unsupported SLES version (Need atleast 12-SP2)\n"
+            exit 1       
+        fi
+	
+	# Update to install latest packages
+	zypper update
+
+        repo="zypper --non-interactive install" 
+
+        # Found by the main repo
+        $command git-core
+	$command make
+        $command gcc
+        $command openssl
+        $command libopenssl-devel
+        $command libgcrypt20
+        $command bc
+
+        # Found by opensuse
+        zypper ar http://download.opensuse.org/tumbleweed/repo/oss/suse/ opensuse
+	zypper in gnu-efi
+	zypper in ccache
+        ;;
+     *)
+        echo "$0: Unsupported distro. Only supports Ubuntu, RHEL, CentOS and SUSE"
+        exit 1
+        ;;
+esac
+
+# No longer used to build LSVM:
+#$command unzip
+#$command g++
+#$command bison
+#$command flex
+#$command automake
+#$command python
+#$command libgcrypt11-dev
+
+#ln -s /usr/bin/aclocal-1.15 /usr/bin/aclocal-1.14
+#ln -s /usr/bin/automake-1.15 /usr/bin/automake-1.14

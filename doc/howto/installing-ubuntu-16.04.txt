@@ -1,0 +1,10 @@
+For Ubuntu 16.04 Server
+
+Installing the OS with hyper-v keyboard.
+	1. Use the Unbuntu installer and choose default options until you get to partition your hard drive.
+      2. Choose the "encryption with LVM" option and continue the installation with default options.
+      3. When the installation finishes, don't continue and instead choose to go back. Execute the shell.
+	4. Do nano /target/etc/initramfs-tools/modules and type hyperv-keyboard.
+5. Exit the shell (exit) and finish the installation.
+
+After you've installed Ubuntu, run this script at base directory  as root.

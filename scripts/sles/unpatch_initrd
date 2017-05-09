@@ -1,0 +1,46 @@
+#!/bin/bash
+
+top=../..
+
+if [ "$#" != "0" ]; then
+    echo "Usage: $0"
+    exit 1
+fi
+
+##==============================================================================
+##
+## remove lsvmtool:
+##
+##==============================================================================
+
+dest=/sbin/lsvmtool
+rm -rf ${dest}
+
+##==============================================================================
+##
+## remove lsvmtool-password-agent:
+##
+##==============================================================================
+
+dest=/sbin/lsvmtool-password-agent
+rm -rf ${dest}
+
+systemd_path=/usr/lib/systemd/system
+dest=${systemd_path}/lsvmtool-password-agent.path
+rm -rf ${dest}
+
+dest=${systemd_path}/sysinit.target.wants/lsvmtool-password-agent.path
+rm -rf ${dest}
+
+dest=${systemd_path}/lsvmtool-password-agent.service
+rm -rf ${dest}
+
+##==============================================================================
+##
+## remove module-setup.sh:
+##
+##==============================================================================
+
+dracut_module=90lsvm
+dracut_module_path=/usr/lib/dracut/modules.d/${dracut_module}
+rm -rf ${dracut_module_path}

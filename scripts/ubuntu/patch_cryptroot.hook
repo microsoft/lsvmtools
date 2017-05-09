@@ -1,0 +1,82 @@
+#!/bin/sh
+
+PREREQ="cryptroot"
+prereqs()
+{
+    echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+    prereqs
+    exit 0
+    ;;
+esac
+
+
+. /usr/share/initramfs-tools/hook-functions
+. $(dirname "$0")/blkdev_utils
+# Begin real processing here
+
+filename="$DESTDIR/conf/conf.d/cryptroot"
+
+##
+## Get the block device from /boot path:
+##
+
+path=/boot
+dev=$(mount_to_blkdev $path)
+
+##
+## If /dev/mapper path, then convert to underyling partition name:
+##
+
+echo $dev | grep /dev/mapper > /dev/null
+
+if [ "$?" = "0" ]; then
+    part=$(logical_dev_to_physical_dev "$dev")
+else
+    part=$dev
+fi
+
+##
+## If not a LUKS device, then nothing to patch:
+##
+
+cryptsetup isLuks $part
+
+if [ "$?" != "0" ]; then
+    # success!
+    exit 0
+fi
+
+uuid=`blkid $part | cut -d '"' -f 2`
+line="target=boot,source=UUID=$uuid,key=none,rootdev,lvm=none"
+
+##
+## Avoid adding duplicate lines:
+##
+
+if [ -f "$filename" ]; then
+    fgrep -i "$uuid" $filename > /dev/null
+    if [ "$?" = 0 ]; then
+        exit 0
+    fi
+fi
+
+##
+## Prepend line to file:
+##
+
+echo "$line" > $filename.new
+cat $filename >> $filename.new
+cp $filename.new $filename
+rm -f $filename.new
+
+##
+## Append string to every line in the file:
+##
+
+sed 's-.*-&,keyscript=/lib/cryptsetup/scripts/lsvmaskpass-g' $filename > $filename.new
+cp $filename.new $filename
+rm -f $filename.new

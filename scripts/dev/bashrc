@@ -1,0 +1,57 @@
+# Save directory location: "sd label"
+function sd
+{
+    if [ "$1" == "" ]
+    then
+	name=`basename $PWD`
+    else
+	name=$1
+    fi
+
+    mkdir -p $HOME/.dirs
+    pwd > $HOME/.dirs/$name
+}
+
+# Jump to directory location: "jd label"
+function jd
+{
+    if [ "$1" == "" ]
+    then
+	cd $HOME
+	return
+    fi
+
+    name=$1
+    cd `cat $HOME/.dirs/$name`
+    pwd
+}
+
+# Add to PATH variable:
+function extend_path
+{
+    # Put /root/bin on path:
+    export PATH=/root/bin:$PATH
+
+    # Put and /root/vmshield/build/bin on path:
+    export PATH=/root/vmshield/build/bin:$PATH
+}
+
+# Install LUKS shortcut aliases
+function install_luks_shortcuts
+{
+    alias ldump="cryptsetup luksDump"
+    alias lopen="cryptsetup luksOpen"
+    alias lclose="cryptsetup luksClose"
+    alias laddkey="cryptsetup luksAddKey"
+    alias lrmkey="cryptsetup luksRemoveKey"
+    alias lchkey="cryptsetup luksChangeKey"
+}
+
+extend_path
+
+install_luks_shortcuts
+
+export GITURL=https://mikbras:PASSWORD@github.com/Microsoft/vmshield
+
+export LSVMPREP_SEAL=1
+export LSVMPREP_DBXUPDATE=1

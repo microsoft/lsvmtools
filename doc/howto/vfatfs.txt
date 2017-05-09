@@ -1,0 +1,12 @@
+
+
+Creating a VFAT file system on a file:
+
+    dd if=/dev/zero of=espimage bs=512 count=20000
+    losetup /dev/loop0 espimage
+    mkfs.vfat /dev/loop0
+    mkdir /mnt/espimage
+    mount /dev/loop0 /mnt/espimage
+    ( cd /boot/efi; tar cf - EFI) | ( cd /mnt/espimage; tar xf - )
+    umount /mnt/espimage
+    losetup -d /dev/loop0

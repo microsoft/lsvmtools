@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ -x /usr/bin/ccache ]; then
+    /usr/bin/ccache /usr/bin/gcc $*
+else
+    /usr/bin/gcc $*
+fi

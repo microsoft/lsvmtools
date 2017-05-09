@@ -1,0 +1,13 @@
+cp initrd initrd.gz
+
+gzip -d *.gz
+
+mkdir tmp
+
+cd tmp
+
+cpio -o < ../initrd
+
+# changes...
+
+find . | cpio --create --format='newc' > ../initrd.cpio

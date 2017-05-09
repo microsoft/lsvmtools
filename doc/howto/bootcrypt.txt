@@ -1,0 +1,21 @@
+Encrypting the boot drive on Ubuntu:
+====================================
+
+These steps (followed carefully) encrypt the boot drive and install the 
+Linux Shielded Virtual Machine (LSVM) components. After completing them,
+you should be able to reboot into a system with an encrypted boot parition.
+
+(1) Use the 'bootcrypt' script to convert the /boot partition to an
+    encrypted parition. Instructions on how to update /etc/crypttab and
+    /etc/fstab are printed to standard output.
+
+(2) Build and install LSVM:
+
+    # cd vmshield
+    # make
+    # make install
+
+(3) Reboot the system and hopefully it will boot from the encrypted drive.
+
+    # reboot
+

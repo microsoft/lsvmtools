@@ -1,0 +1,14 @@
+Install dependencies:
+
+	# apt-get install unzip
+	# apt-get install make
+	# apt-get install gcc
+	# apt-get install g++
+	# apt-get install bison
+	# apt-get install flex
+	# apt-get install openssl
+	# apt-get install libssl-dev
+	# apt-get install gnu-efi
+	# apt-get install automake
+	# apt-get install python
+        # apt-get install libgcrypt11-dev

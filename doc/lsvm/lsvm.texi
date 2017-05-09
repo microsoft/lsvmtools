@@ -1,0 +1,80 @@
+\input texinfo @c -*-texinfo-*-
+@setfilename lsvm.info
+@settitle Linux Shielded Virtual Machine (LSVM)
+@c @setchapternewpage off
+@paragraphindent 0
+
+@c =============================================================================
+@c
+@c Title Page:
+@c
+@c =============================================================================
+@titlepage
+@title Linux Shielded Virtual Machine (LSVM)
+@subtitle Concepts and Overview
+@author Microsoft Corporation
+@author July 13, 2016
+Copyright @copyright{} 2013 Microsoft Corporation
+@end titlepage
+
+@c =============================================================================
+@c
+@c Contents
+@c
+@c =============================================================================
+@contents
+
+@c =============================================================================
+@c
+@c Introduction
+@c
+@c =============================================================================
+@chapter Introduction
+
+This document describes the Linux Shielded Virtual Machine (LSVM) environment.
+The goal of LSVM is protect a Linux VM (the guest OS) from attacks originiating 
+from the hosting environment (the host OS). Processes running on the host may 
+attack the guest by attempting to externally modify its resources, including:
+
+@itemize @bullet
+@item virtual disk files
+@item configuration files
+@item execution state files
+@item virtual memory
+@end itemize
+
+Hypervisors are beginning to add features to shield these resources from
+attackers. For example, Hyper-V shields each of these resources, but it 
+requires special operating system capabilities to fully protect virtual 
+disk files from attack. These capabilities include:
+
+@itemize @bullet
+@item UEFI secure boot (of the primary boot loader)
+@item TPM measured boot (of the boot chain components)
+@item Disk encryption (of the root file system)
+@end itemize
+
+Without these capabilities, the following kinds of attacks are possible by
+directly modifying the virtual disk file.
+
+@itemize @bullet
+@item Replacing the primary boot loader (e.g., Linux shim)
+@item Replacing the secondary boot loader (e.g., GRUB2)
+@item Replacing the Linux kernel
+@item Modifying the intial ramdisk
+@item Modifying the root parition
+@end itemize
+
+This document explains how LSVM utilizes the capabilities above to provide a
+comprehensive shielded Linux environment.
+
+@c =============================================================================
+@c
+@c Approach
+@c
+@c =============================================================================
+@chapter Approach
+
+LSVM approaches 
+
+@bye

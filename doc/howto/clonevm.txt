@@ -1,0 +1,19 @@
+
+To clone a Hyper-V VM:
+
+    (1) Rename VM to the name you would like your clone to have:
+
+	PS> Rename-VM ubuntu.v1 -NewName ubuntu.v2
+
+    (2) Export the VM by right clicking and selecting "Export"
+
+    (3) Now rename VM back to original name:
+
+	PS> Rename-VM ubuntu.v2 -NewName ubuntu.v1
+
+    (4) Right-click on host machine in left panel and select "Import"
+
+    (5) Import the VM (it will have the name "ubuntu.v2"
+
+*The step above are to get around not being able to rename of VM when it is
+exported or imported.
