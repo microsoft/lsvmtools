@@ -997,7 +997,7 @@ static void _Pack_TPMU_ASYM_SCHEME(
         case TPM_ALG_NULL:
             break;
         default:
-            /* ATTN: unsupported */
+            /* Unsupported */
             buf->error = 1;
             break;
     }
@@ -1474,7 +1474,7 @@ static void _Unpack_TPMU_ASYM_SCHEME(
         case TPM_ALG_NULL:
             break;
         default:
-            /* ATTN: unsupported */
+            /* Unsupported */
             buf->error = 1;
             break;
     }
@@ -2163,7 +2163,7 @@ TPM_RC TPM2_GetCapability(
         }
         else
         {
-            /* ATTN: unsupported capability type */
+            /* Unsupported capability type */
             RETURN(TPM_RC_FAILURE);
         }
 
@@ -2328,7 +2328,7 @@ TPM_RC TPM2_DictionaryAttackLockReset(
     IN EFI_TCG2_PROTOCOL *protocol,
     IN TPMI_RH_LOCKOUT lockHandle,
     IN const TPMS_AUTH_COMMAND *authCommand,
-    OUT TPMS_AUTH_RESPONSE *authResponse) /* ATTN: ignored */
+    OUT TPMS_AUTH_RESPONSE *authResponse)
 {
     TPMBuf in;
     TPMBuf out;

@@ -312,10 +312,6 @@ static int _Sethostname(
         }
     }
 
-/* 
-ATTN: copy hosts.new to hosts 
-*/
-
     rc = 0;
 
 done:

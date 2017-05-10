@@ -909,8 +909,6 @@ static int _AllocateFATChain(
     UINT32 i;
     BufU32 buf = BUF_U32_INITIALIZER;
 
-    /* ATTN-C: rework to not use dynamic memory */
-
     /* Check parameters */
     if (!clustno)
         GOTO(done);
@@ -1411,7 +1409,7 @@ int _PutFile(
 
     /* Inject directory entry */
     {
-        /* ATTN-C: times and dates are hardcoded! */
+        /* Used hardcoded dates and times */
         VFATDirectoryEntry entry =
         {
             { '\0' }, /* name */
@@ -1482,7 +1480,6 @@ int _PutFile(
                     continue;
             }
 
-            /* ATTN-B: handle overflow of directory files */
             /* If no more room for a directory entry */
             if ((void*)(p + 1) >= (dirData + dirSize))
                 GOTO(done);
@@ -1582,8 +1579,6 @@ int VFATDir(
     /* Scan this directory and form list of files */
     {
         VFATDirectoryEntry* p = (VFATDirectoryEntry*)data;
-
-        /* ATTN: be sure not to overrun size */
 
         for (; p->name[0]; p++)
         {

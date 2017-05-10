@@ -81,7 +81,6 @@ char* Strncat(
     UINTN len)
 {
 #if defined(__linux__) || defined(BUILD_EFI)
-    /* ATTN: check this! */
     UINTN n = Strlen(dest);
     UINTN i;
 

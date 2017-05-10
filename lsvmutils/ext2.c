@@ -4211,7 +4211,7 @@ done:
 static EXT2Err _AppendDirectoryEntry(
     EXT2* ext2, 
     void* data,
-    UINT32 size,
+    UINT32 size, /* unused */
     char** current,
     EXT2DirEntry** prev,
     const EXT2DirEntry* ent)
@@ -4219,8 +4219,6 @@ static EXT2Err _AppendDirectoryEntry(
     EXT2_DECLARE_ERR(err);
     UINT32 rec_len;
     UINT32 offset;
-
-    /* ATTN: size not used (use to check for bounds violation) */
     (void)size;
 
     /* Compute size of the new directory entry */

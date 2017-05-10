@@ -177,7 +177,6 @@ static int _GenIV(
     if (Strcmp("cbc-plain", header->cipher_mode) == 0)
         ivSize = 4;
 
-    /* ATTN: this will be overwritten below! */
     Memcpy(iv, &sec, ivSize);
 
     if (Strcmp("xts-plain64", header->cipher_mode) == 0)
