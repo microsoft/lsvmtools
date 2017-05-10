@@ -108,6 +108,7 @@ EFI_STATUS ApplyDBXUpdate(
         &data,
         &size) != EFI_SUCCESS)
     {
+        LOGI(L"No DBX updates found");
         status = EFI_SUCCESS;
         *reboot = FALSE;
         goto done;

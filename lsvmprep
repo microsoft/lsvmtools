@@ -38,10 +38,6 @@ do
       sealopt=1
       ;;
 
-    --dbxupdate)
-      dbxupdateopt=1
-      ;;
-
     *)
       echo "$0: unknown option:  $opt"
       exit 1
@@ -59,10 +55,6 @@ done
 
 if [ "${LSVMPREP_SEAL}" == "1" ]; then
     sealopt=1
-fi
-
-if [ "${LSVMPREP_DBXUPDATE}" == "1" ]; then
-    dbxupdateopt=1
 fi
 
 ##==============================================================================
@@ -86,7 +78,6 @@ OPTIONS:
                             well-known passphrases (i.e., 'passphrase').
     --secureboot            If the --seal option given, then seal for secure 
                             boot enabled.
-    --dbxupdate             Update the UEFI dbx variable.
 
 EOF
     exit 0
@@ -230,9 +221,7 @@ check_for_revocation()
     chkerr "$?" "$0: failed to install lsvmload"
 }
 
-if [ "${dbxupdateopt}" == "1" ]; then
-    check_for_revocation
-fi
+check_for_revocation
 
 ##==============================================================================
 ##
@@ -725,9 +714,7 @@ apply_dbxupdate()
     fi
 }
 
-if [ "${dbxupdateopt}" == "1" ]; then
-    apply_dbxupdate
-fi
+apply_dbxupdate
 
 ##==============================================================================
 ##
