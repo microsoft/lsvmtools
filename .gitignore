@@ -31,3 +31,23 @@
 # Debug files
 *.dSYM/
 *.su
+
+# Temporary files
+3rdparty/gnuefi/depend.mak
+3rdparty/gnuefi/elf_x86_64_efi.lds
+3rdparty/gnuefi/gnu-efi-3.0.2/
+3rdparty/openssl/efi/openssl-1.0.2g/
+3rdparty/openssl/linux/openssl-1.0.2g/
+3rdparty/openssl/openssl-1.0.2g.tar.gz
+3rdparty/xz/depend.mak
+3rdparty/xz/xz/
+3rdparty/zlib/depend.mak
+3rdparty/zlib/zlib/
+build/
+config.mak
+lsvmload/depend.mak
+lsvmload/lsvmload.efi
+lsvmload/timestamp.c
+lsvmtool/depend.mak
+lsvmutils/depend.mak
+posix/depend.mak
