@@ -32,8 +32,8 @@ function extend_path
     # Put /root/bin on path:
     export PATH=/root/bin:$PATH
 
-    # Put and /root/vmshield/build/bin on path:
-    export PATH=/root/vmshield/build/bin:$PATH
+    # Put and /root/lsvmtools/build/bin on path:
+    export PATH=/root/lsvmtools/build/bin:$PATH
 }
 
 # Install LUKS shortcut aliases
@@ -51,7 +51,7 @@ extend_path
 
 install_luks_shortcuts
 
-export GITURL=https://mikbras:PASSWORD@github.com/Microsoft/vmshield
+export GITURL=https://mikbras:PASSWORD@github.com/Microsoft/lsvmtools
 
 export LSVMPREP_SEAL=1
 export LSVMPREP_DBXUPDATE=1
