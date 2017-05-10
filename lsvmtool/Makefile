@@ -48,9 +48,12 @@ SOURCES += dbxupdate.c
 
 OBJECTS = $(SOURCES:.c=.o)
 
-LIBDEPENDS += $(LIBDIR)/liblsvmutils.a
 LIBDEPENDS += $(LIBDIR)/libzliblinux.a
+LIBDEPENDS += $(LIBDIR)/libposixlinux.a
+LIBDEPENDS += $(LIBDIR)/libcryptolinux.a
 LIBDEPENDS += $(LIBDIR)/liblzmalinux.a
+LIBDEPENDS += $(LIBDIR)/liblsvmutils.a
+LIBDEPENDS += $(TOP)/3rdparty/openssl/linux/openssl-1.0.2g/libcrypto.a
 
 LIBRARIES += -L$(TOP)/build/lib -llsvmutils -lcryptolinux
 LIBRARIES += -ldl

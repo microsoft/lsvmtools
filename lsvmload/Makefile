@@ -54,7 +54,15 @@ OBJECTS = $(SOURCES:.c=.o)
 
 LIBRARIES += -L$(LIBDIR) -llsvmutilsefi -lcryptoefi -lposixefi -lefi -lgnuefi -llzmaefi -lzlibefi
 
-LIBDEPENDS += $(LIBDIR)/libutilsefi.a $(LIBDIR)/liblzmaefi.a
+LIBDEPENDS += $(LIBDIR)/libposixefi.a
+LIBDEPENDS += $(LIBDIR)/liblsvmutilsefi.a
+LIBDEPENDS += $(LIBDIR)/libzlibefi.a
+LIBDEPENDS += $(LIBDIR)/liblzmaefi.a
+LIBDEPENDS += $(LIBDIR)/libcryptoefi.a
+LIBDEPENDS += $(LIBDIR)/liblsvmutils.a
+LIBDEPENDS += $(TOP)/3rdparty/openssl/efi/openssl-1.0.2g/libcrypto.a
+LIBDEPENDS += $(TOP)/3rdparty/gnuefi/gnu-efi-3.0.2/x86_64/gnuefi/libgnuefi.a
+LIBDEPENDS += $(TOP)/3rdparty/gnuefi/gnu-efi-3.0.2/x86_64/lib/libefi.a
 
 top: depend 
 	$(MAKE) $(TARGET)
@@ -68,7 +76,7 @@ endif
 
 OBJCOPYFLAGS += $(EFI_OBJCOPYFLAGS)
 
-$(TARGET): $(OBJECTS)
+$(TARGET): $(OBJECTS) $(LIBDEPENDS)
 	$(MAKE) --no-print-directory timestamp
 	gcc -c $(CFLAGS) $(DEFINES) $(INCLUDES) -o timestamp.o timestamp.c
 	ld -o $(TARGETBASE).so $(LDFLAGS) $(OBJECTS) timestamp.o $(LIBRARIES)
