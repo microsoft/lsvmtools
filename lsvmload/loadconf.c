@@ -35,7 +35,6 @@
 #include <lsvmutils/strings.h>
 #include "paths.h"
 #include "log.h"
-#include "faults.h"
 #include "loadconf.h"
 
 static int _confCallback(

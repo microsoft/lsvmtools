@@ -21,7 +21,6 @@ CFLAGS += -Wall -Os $(EFI_CFLAGS) -Werror
 
 SOURCES += bootfs.c
 SOURCES += cert.c
-#SOURCES += faults.c
 SOURCES += globals.c
 SOURCES += image.c
 SOURCES += loadconf.c
@@ -31,7 +30,6 @@ SOURCES += logo.c
 SOURCES += main.c
 SOURCES += measure.c
 SOURCES += paths.c
-#SOURCES += sleep.c
 SOURCES += stubs.c
 SOURCES += luksbio.c
 SOURCES += bootbio.c

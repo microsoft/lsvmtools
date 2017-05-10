@@ -43,7 +43,6 @@
 #include "paths.h"
 #include "console.h"
 #include "simpletext.h"
-#include "faults.h"
 #include "logging.h"
 #include "globals.h"
 #include "bootfs.h"
@@ -245,8 +244,7 @@ EFI_STATUS Initialize(
     ClearErr(err);
 
     /* Check to see if expected files are in place */
-    if (_CheckFileDependencies(imageHandle) != EFI_SUCCESS ||
-        CheckFault("FILE_DEPENDENCY_CHECKS_FAILED"))
+    if (_CheckFileDependencies(imageHandle) != EFI_SUCCESS)
     {
         status = EFI_LOAD_ERROR;
         SetErr(err, L"file dependency checks failed");
