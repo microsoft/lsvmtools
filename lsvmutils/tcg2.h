@@ -192,18 +192,6 @@ typedef struct _EFI_TCG2_EVENT
 PACKED
 EFI_TCG2_EVENT;
 
-/* ATTN: experimental */
-typedef struct _EFI_COMPACT_HASH_EVENT
-{
-    UINT32 PCRIndex;
-    UINT32 EventType;
-    UINT8 Digest[20];
-    UINT32 EventDataSize;
-    UINT8 Event[1];
-}
-PACKED
-EFI_COMPACT_HASH_EVENT;
-
 typedef EFI_STATUS (EFIAPI *EFI_TCG2_HASH_LOG_EXTEND_EVENT)( 
     IN EFI_TCG2_PROTOCOL *This,
     IN UINT64 Flags,
