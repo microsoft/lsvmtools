@@ -315,6 +315,24 @@ static int _GetToken(const char** text, const char** tok)
     return 'I';
 }
 
+static void _ReleaseCommands(
+    GRUBCommand* commands,
+    UINTN numCommands)
+{
+    UINTN i;
+
+    for (i = 0; i < numCommands; i++)
+    {
+        StrArr sa;
+        sa.data = commands[i].argv;
+        sa.size = commands[i].argc;
+        sa.capacity = sa.size;
+        StrArrRelease(&sa);
+    }
+
+    Free(commands);
+}
+
 static int _Parse(
     const char* data,
     GRUBCommand** commandsOut,
@@ -387,7 +405,9 @@ done:
 
     if (rc != 0)
     {
-        /* ATTN: release here! */
+        _ReleaseCommands(commands, numCommands);
+        *commandsOut = NULL;
+        *numCommandsOut = 0;
     }
     else
     {
@@ -420,34 +440,6 @@ INLINE void _Dump(
     {
         _DumpCommand(&commands[i]);
     }
-}
-
-static void _FreeCommand(GRUBCommand* cmd)
-{
-    UINTN i;
-
-    for (i = 0; i < cmd->argc; i++)
-    {
-        Free(cmd->argv[i]);
-    }
-
-    Free(cmd->argv);
-}
-
-static void _Release(
-    GRUBCommand* commands,
-    UINTN numCommands)
-{
-    UINTN i;
-
-    (void)_FreeCommand;
-
-    for (i = 0; i < numCommands; i++)
-    {
-        _FreeCommand(&commands[i]);
-    }
-
-    Free(commands);
 }
 
 INLINE void _Indent(UINTN depth)
@@ -749,7 +741,7 @@ done:
         Free(data);
 
     if (commands)
-        _Release(commands, numCommands);
+        _ReleaseCommands(commands, numCommands);
 
     return rc;
 }

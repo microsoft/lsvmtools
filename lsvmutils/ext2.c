@@ -37,6 +37,7 @@
 # include <string.h>
 #endif /* defined(BUILD_EFI) */
 
+#include <time.h>
 #include "utils.h"
 #include "buf.h"
 #include "strings.h"
@@ -3472,7 +3473,7 @@ static EXT2Err _UpdateInodeBlockPointers(
         r -= n;
     }
 
-    /* ATTN: triple indirect block numbers not handled! */
+    /* Note: triple indirect block numbers not handled! */
     if (r > 0)
     {
         GOTO(done);
@@ -4023,7 +4024,8 @@ static EXT2Err _CreateFileInode(
 
     /* Initialize the inode */
     {
-        const UINT32 time = 1464821956; /* ATTN: hardcoded for now */
+        /* Uses posix_time() for EFI */
+        const UINT32 t = time(NULL);
 
         Memset(&inode, 0, sizeof(EXT2Inode));
 
@@ -4038,9 +4040,9 @@ static EXT2Err _CreateFileInode(
         inode.i_size = size;
 
         /* Set the access, creation, and mtime to the same value */
-        inode.i_atime = time;
-        inode.i_ctime = time;
-        inode.i_mtime = time;
+        inode.i_atime = t;
+        inode.i_ctime = t;
+        inode.i_mtime = t;
 
         /* Linux-specific value */
         inode.i_osd1 = 1;
@@ -4103,7 +4105,7 @@ static EXT2Err _CreateDirInodeAndBlock(
 
     /* Initialize the inode */
     {
-        const UINT32 time = 1464821956; /* ATTN: hardcoded for now */
+        const UINT32 t = time(NULL);
 
         Memset(&inode, 0, sizeof(EXT2Inode));
 
@@ -4118,9 +4120,9 @@ static EXT2Err _CreateDirInodeAndBlock(
         inode.i_size = ext2->block_size;
 
         /* Set the access, creation, and mtime to the same value */
-        inode.i_atime = time;
-        inode.i_ctime = time;
-        inode.i_mtime = time;
+        inode.i_atime = t;
+        inode.i_ctime = t;
+        inode.i_mtime = t;
 
         /* Linux-specific value */
         inode.i_osd1 = 1;
