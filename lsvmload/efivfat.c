@@ -307,7 +307,7 @@ int MapEFIVFAT(
     }
 #endif
 
-    /* ATTN: assuming EFI partition is /dev/sda1 (use detection) */
+    /* Assuming EFI partition is /dev/sda1 (use detection) */
     if (GetGPTEntry(partitionNumber, &entry) != 0)
         goto done;
 

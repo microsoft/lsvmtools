@@ -204,7 +204,7 @@ EFI_DEVICE_PATH* DevPathCreatePseudoPartition(
                 HardDriveDevicePathPacked tmp;
                 Memcpy(&tmp, p, sizeof(tmp));
 
-                /* ATTN: assuming SCSI(PUN=0,LUN=0) */
+                /* Assuming SCSI(PUN=0,LUN=0) */
 
                 /* Clone the first harddrive we find */
                 if (!result)
