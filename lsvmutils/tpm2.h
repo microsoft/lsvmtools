@@ -450,7 +450,7 @@ INLINE void TPMS_PCR_SELECTION_SelectPCR(
 /*
 **==============================================================================
 **
-** HASH_COUNT - the number of supported hashes (ATTN: revisit this)
+** HASH_COUNT - the number of supported hashes
 **
 **==============================================================================
 */
@@ -978,7 +978,7 @@ union _TPMU_ASYM_SCHEME
     TPMS_ENC_SCHEME_RSAES rsaes;
     TPMS_ENC_SCHEME_OAEP oaep;
     TPMS_SCHEME_HASH anySig;
-    unsigned char padding[4]; /* ATTN: added to make structure right size */
+    unsigned char padding[4];
 };
 
 /*
@@ -1625,13 +1625,13 @@ struct _TPML_DIGEST_VALUES
 
 TPM_RC TPM2_GetCapability(
     EFI_TCG2_PROTOCOL *protocol,
-    IN const TPMS_AUTH_COMMAND *authCommand, /* ATTN: ignored */
-    IN TPM_CAP capability, /* ATTN: only TPM_CAP_TPM_PROPERTIES supported */
+    IN const TPMS_AUTH_COMMAND *authCommand, /* Ignored */
+    IN TPM_CAP capability, /* Only TPM_CAP_TPM_PROPERTIES supported */
     IN UINT32 property,
     IN UINT32 propertyCount,
     OUT TPMI_YES_NO *moreData,
     OUT TPMS_CAPABILITY_DATA *capabilityData,
-    OUT TPMS_AUTH_RESPONSE *authResponse); /* ATTN: ignored */
+    OUT TPMS_AUTH_RESPONSE *authResponse); /* Ignored */
 
 /*
 **==============================================================================
@@ -1645,12 +1645,12 @@ TPM_RC TPM2_GetCapability(
 
 TPM_RC TPM2_PCR_Read(
     IN EFI_TCG2_PROTOCOL *protocol,
-    IN const TPMS_AUTH_COMMAND *authCommand, /* ATTN: ignored */
+    IN const TPMS_AUTH_COMMAND *authCommand, /* Ignored */
     IN TPML_PCR_SELECTION  *pcrSelectionIn,
     OUT UINT32 *pcrUpdateCounter,
     OUT TPML_PCR_SELECTION *pcrSelectionOut,
     OUT TPML_DIGEST *pcrValues,
-    OUT TPMS_AUTH_RESPONSE *authResponse); /* ATTN: ignored */
+    OUT TPMS_AUTH_RESPONSE *authResponse); /* Ignored */
 
 /*
 **==============================================================================
