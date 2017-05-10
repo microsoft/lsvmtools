@@ -43,7 +43,6 @@ SOURCES += cpiomain.c
 SOURCES += cpio.c
 SOURCES += vfatmain.c
 SOURCES += logo.c
-SOURCES += specialize.c
 SOURCES += dbxupdate.c
 
 OBJECTS = $(SOURCES:.c=.o)

@@ -82,7 +82,6 @@
 #include <xz/lzmaextras.h>
 #include <lsvmutils/policy.h>
 #include <lsvmutils/lsvmloadpolicy.h>
-#include "specialize.h"
 #include <zlib.h>
 #include "zlibextras.h"
 #include "dbxupdate.h"
@@ -2228,34 +2227,6 @@ static int _conf_command(
     return 0;
 }
 
-static int _specialize_command(
-    int argc, 
-    const char** argv)
-{
-    int status = 1;
-    Error err;
-
-    /* Check argument */
-    if (argc != 2)
-    {
-        fprintf(stderr, "Usage %s PATH\n", argv[0]);
-        goto done;
-    }
-
-    /* Specialize */
-    if (Specialize(argv[1], &err) != 0)
-    {
-        fprintf(stderr, "%s: specialize failed: %s\n", argv[0], err.buf);
-        goto done;
-    }
-
-    status = 0;
-
-done:
-
-    return status;
-}
-
 static int _numpcrs_command(
     int argc, 
     const char** argv)
@@ -2398,8 +2369,7 @@ static int _seal_command(
         goto done;
     }
 
-    /* ATTN: Add --pcr option to select these */
-    //pcrMask |= (1 << 4);
+    /* Maybe add --pcr option to select these */
     pcrMask |= (1 << 7);
     pcrMask |= (1 << 11);
 
@@ -2494,7 +2464,7 @@ static int _unseal_command(
         }
     }
 
-    /* ATTN: add --pcr option */
+    /* Maybe add --pcr option to control these masks */
     pcrMask |= (1 << 7);
     pcrMask |= (1 << 11);
 
@@ -4783,11 +4753,6 @@ static Command _commands[] =
         "cryptpw",
         "Encrypt a Linux password",
         _cryptpw_command,  
-    },
-    {
-        "specialize",
-        "Apply specializations",
-        _specialize_command,
     },
     {
         "gunzip",
