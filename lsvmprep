@@ -716,10 +716,14 @@ apply_dbxupdate()
         need=`${lsvmtool} needdbxupdate ${src}`
         chkerr "$?" "$0: $FUNCNAME(): failed to apply update"
 
+        echo -n "Checking for DBX update: "
+
         if [ "${need}" == "yes" ]; then
-            echo "Creating ${dest}"
+            echo "created ${dest}"
             cp ${src} ${dest}
             chkerr "$?" "$0: $FUNCNAME(): failed to create ${dest}"
+        else
+            echo "up to date"
         fi
     fi
 }
