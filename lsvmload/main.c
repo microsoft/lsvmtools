@@ -91,6 +91,7 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *systemTable)
     Error err;
     EXT2* bootfs = NULL;
     BOOLEAN unsealedBootkeyValid = FALSE;
+    BOOLEAN haveTPM = FALSE;
 
     /* No-op to keep linker from removing these symbols */
     __version[Strlen(__version)] = '\0';
@@ -159,25 +160,25 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *systemTable)
     }
 
     /* Check whether TPM chip is present */
-    if ((status = TPM2X_CheckTPMPresentFlag(tcg2Protocol)) != EFI_SUCCESS)
+    if ((status = TPM2X_CheckTPMPresentFlag(tcg2Protocol)) == EFI_SUCCESS)
+    {
+        LOGI(L"TPM chip detected");
+        haveTPM = TRUE;
+    }
+    else
     {
         LOGE(L"TPM chip detect failed");
-        status = EFI_UNSUPPORTED;
-        goto done;
     }
-
-    LOGD(L"TPM chip detected");
 
     /* Log the PCRs */
-    if (GetLogLevel() >= DEBUG)
-    {
+    if (haveTPM && GetLogLevel() >= DEBUG)
         LogPCRs(tcg2Protocol, imageHandle, L"Initial PCR Values");
-    }
 
     /* Initialize TPM and other things */
     if ((status = Initialize(
         tcg2Protocol, 
         imageHandle, 
+        haveTPM,
         &err)) != EFI_SUCCESS)
     {
         const CHAR16 MSG[] = L"measured boot failed: %s";
@@ -188,26 +189,24 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *systemTable)
     }
 
     /* Measure the Linux scenario into PCR[11] */
-    if (MeasureLinuxScenario(tcg2Protocol, imageHandle) != EFI_SUCCESS)
+    if (haveTPM && MeasureLinuxScenario(tcg2Protocol, imageHandle) != EFI_SUCCESS)
     {
         LOGE(L"failed to measure Linux scenario");
         goto done;
     }
 
-    if (GetLogLevel() >= DEBUG)
-    {
+    if (haveTPM && GetLogLevel() >= DEBUG)
         LogPCRs(tcg2Protocol, imageHandle, L"After PCR11 Values");
-    }
 
     /* Attempt to unseal the keys */
-    if (UnsealKeys(imageHandle, tcg2Protocol) != EFI_SUCCESS)
+    if (haveTPM && UnsealKeys(imageHandle, tcg2Protocol) != EFI_SUCCESS)
     {
         LOGE(L"failed to unseal keys");
         /* Will ask for passphrase later */
     }
 
     /* Cap PCR[11] */
-    if (CapPCR(imageHandle, tcg2Protocol, 11) != EFI_SUCCESS)
+    if (haveTPM && CapPCR(imageHandle, tcg2Protocol, 11) != EFI_SUCCESS)
     {
         LOGE(L"failed to cap PCR[11]");
         goto done;
@@ -339,6 +338,7 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *systemTable)
         char path[PATH_MAX];
 
         /* Apply DBX Update and reseal 'sealedkeys' */
+        if (haveTPM)
         {
             BOOLEAN reboot;
 

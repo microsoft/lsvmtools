@@ -170,3 +170,6 @@ timestamp:
 
 size:
 	size $(TARGETBASE).so
+
+inst:
+	cp lsvmload.efi /boot/efi/EFI/boot/bootx64.efi

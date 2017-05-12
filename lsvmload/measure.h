@@ -46,6 +46,7 @@
 EFI_STATUS Initialize(
     EFI_TCG2_PROTOCOL* tcg2Protocol,
     EFI_HANDLE imageHandle,
+    BOOLEAN haveTPM,
     Error* err);
 
 EFI_STATUS MeasureBinary(

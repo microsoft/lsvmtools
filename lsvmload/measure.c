@@ -228,6 +228,7 @@ done:
 EFI_STATUS Initialize(
     EFI_TCG2_PROTOCOL* tcg2Protocol,
     EFI_HANDLE imageHandle,
+    BOOLEAN haveTPM,
     Error* err)
 {
     EFI_STATUS status = EFI_SUCCESS;
@@ -252,7 +253,7 @@ EFI_STATUS Initialize(
     }
 
     /* Initialize measured boot */
-    if (_InitMeasuredBoot(tcg2Protocol, imageHandle, err) != 0)
+    if (haveTPM && _InitMeasuredBoot(tcg2Protocol, imageHandle, err) != 0)
     {
         LOGE(L"failed to initialize measured boot: %s", Wcs(err->buf));
         status = EFI_LOAD_ERROR;
