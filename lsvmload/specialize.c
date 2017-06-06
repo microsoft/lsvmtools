@@ -31,6 +31,7 @@
 #include <lsvmutils/efifile.h>
 #include <lsvmutils/alloc.h>
 #include <lsvmutils/luksblkdev.h>
+#include <lsvmutils/specialize.h>
 #include "globals.h"
 #include "log.h"
 #include "progress.h"
@@ -141,6 +142,8 @@ int LoadDecryptCopySpecializeFile(
     UINTN mkSize;
     UINT8* specializeData = NULL;
     UINTN specializeSize = 0;
+    const UINT8* finalSpecData;
+    UINTN finalSpecDataSize;
 
     /* Check for null parameters */
     if (!imageHandle || !bootdev || !path)
@@ -190,13 +193,23 @@ int LoadDecryptCopySpecializeFile(
 
         LOGI(L"Loaded %s", Wcs(path));
 
+        if (FindSpecFile(
+            specializeData,
+            specializeSize,
+            &finalSpecData,
+            &finalSpecDataSize) != 0)
+        {
+            LOGE(L"%a: failed to deserialize spec data", Str(func));
+            goto done;         
+        }
+
         PutProgress(L"Creating /lsvmload/specialize");
 
         /* Copy file to boot partition */
         if (EXT2Put(
             bootfs, 
-            specializeData, 
-            specializeSize, 
+            finalSpecData, 
+            finalSpecDataSize, 
             "/lsvmload/specialize",
             EXT2_FILE_MODE_RW0_000_000) != EXT2_ERR_NONE)
         {

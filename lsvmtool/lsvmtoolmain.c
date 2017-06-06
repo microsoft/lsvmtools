@@ -82,6 +82,7 @@
 #include <xz/lzmaextras.h>
 #include <lsvmutils/policy.h>
 #include <lsvmutils/lsvmloadpolicy.h>
+#include <lsvmutils/specialize.h>
 #include <zlib.h>
 #include "zlibextras.h"
 #include "dbxupdate.h"
@@ -4410,6 +4411,56 @@ done:
     return status;
 }
 
+static int _deserialize_specfile_command(
+    int argc,
+    const char **argv)
+{
+    int status = 1;
+    const char* infile;
+    const char* outfile;
+    unsigned char* inData = NULL;
+    const unsigned char* outData = NULL;
+    size_t inDataSize;
+    UINTN outDataSize;
+
+    if (argc != 3)
+    {
+        fprintf(stderr, "Usage: %s INFILE OUTFILE\n", argv[0]);
+        goto done;
+    }
+
+    infile = argv[1];
+    outfile = argv[2];
+
+    if (LoadFile(infile, 1, &inData, &inDataSize) != 0)
+    {
+        fprintf(stderr, "%s: failed to read: %s\n", argv[0], infile);
+        goto done;
+    }
+
+    if (FindSpecFile(inData, inDataSize, &outData, &outDataSize) != 0)
+    {
+        fprintf(stderr, "%s: failed to find spec file: %s\n", argv[0], infile);
+        goto done;
+    }
+
+    if (PutFile(outfile, outData, outDataSize) != 0)
+    {
+        fprintf(stderr, "%s: failed to write file: %s\n", argv[0], outfile);
+        goto done;
+    }
+  
+    status = 0;
+
+done: 
+    if (inData != NULL)
+    {
+        free(inData);
+    }
+    /* We do NOT free outData, since FindSpecFile sets outfile to an offset in inData. */
+    return status;
+}
+
 /*
 **==============================================================================
 **
@@ -4794,6 +4845,11 @@ static Command _commands[] =
         "deserializekeys",
         "Deserializes the boot+rootkey from unsealed data",
         _deserializekeys_command,
+    },
+    {
+        "deserialize_specfile",
+        "Deserializes the specialization file",
+        _deserialize_specfile_command,
     },
 };
 
