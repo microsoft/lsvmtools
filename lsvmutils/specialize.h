@@ -33,8 +33,8 @@
 #include <lsvmutils/error.h>
 
 #define SPEC_UNATTEND_FILENAME "unattend.xml"
-#define SPEC_UNATTEND_FILENAME_ALTERNATE "Autounattend.xml"
-
+#define SPEC_SPECIALIZE_FILENAME "specialize"
+#define SPEC_WCSTRLEN(x) (sizeof((x))/2 - 1)
 /*
  * This is the format of the Ciphertext:
  * SPECIALIZATION_CLEAR_DATA_HEADER || ENTRY1 || (NAME1 | PAYLOAD1) || Entry2 || ... 
@@ -60,11 +60,24 @@ typedef struct _SPECIALIZATION_CLEAR_DATA_FILE_ENTRY
 
 #define SPECIALIZATION_CLEAR_DATA_FILE_ENTRY_SIZE   (sizeof(SPECIALIZATION_CLEAR_DATA_FILE_ENTRY))
 
-/* Note that this function doesn't allocate memory, it simply changes *out to the spec data. */
-int FindSpecFile(
+typedef struct _SPECIALIZATION_RESULT
+{
+    char* FileName;
+    UINT8* PayloadData;
+    UINT32 PayloadSize; 
+} SPECIALIZATION_RESULT, *PSPECIALIZATION_RESULT;
+
+/* Parses the specialization file format and returns the list of files + data in the
+ * SPECIALIZATION_RESULT format.. */
+int ExtractSpecFiles(
     const UINT8* data,
     UINTN size,
-    const UINT8** out,
-    UINTN* outSize);
+    SPECIALIZATION_RESULT** result,
+    UINTN* resultSize
+    );
+
+void FreeSpecFiles(
+    SPECIALIZATION_RESULT* r,
+    UINTN rSize);
 
 #endif /* _lsvmutils_specialize_h */

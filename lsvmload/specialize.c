@@ -142,8 +142,8 @@ int LoadDecryptCopySpecializeFile(
     UINTN mkSize;
     UINT8* specializeData = NULL;
     UINTN specializeSize = 0;
-    const UINT8* finalSpecData;
-    UINTN finalSpecDataSize;
+    SPECIALIZATION_RESULT* specFiles = NULL;
+    UINTN numSpecFiles;
 
     /* Check for null parameters */
     if (!imageHandle || !bootdev || !path)
@@ -156,6 +156,7 @@ int LoadDecryptCopySpecializeFile(
     if (FileExists(imageHandle, path) == EFI_SUCCESS)
     {
         SECURE_SPECIALIZATION* spec;
+        UINTN i;
 
         /* Load the file into memory */
         if (EFILoadFile(imageHandle, path, &data, &size) != EFI_SUCCESS)
@@ -193,33 +194,51 @@ int LoadDecryptCopySpecializeFile(
 
         LOGI(L"Loaded %s", Wcs(path));
 
-        if (FindSpecFile(
+        if (ExtractSpecFiles(
             specializeData,
             specializeSize,
-            &finalSpecData,
-            &finalSpecDataSize) != 0)
+            &specFiles,
+            &numSpecFiles) != 0)
         {
             LOGE(L"%a: failed to deserialize spec data", Str(func));
             goto done;         
         }
 
+
         PutProgress(L"Creating /lsvmload/specialize");
 
-        /* Copy file to boot partition */
-        if (EXT2Put(
-            bootfs, 
-            finalSpecData, 
-            finalSpecDataSize, 
+        if (EXT2MkDir(
+            bootfs,
             "/lsvmload/specialize",
-            EXT2_FILE_MODE_RW0_000_000) != EXT2_ERR_NONE)
+            EXT2_DIR_MODE_RWX_R0X_R0X) != EXT2_ERR_NONE)
         {
             LOGE(L"%a: failed to create boot:/lsvmload/specialize", Str(func));
             goto done;
         }
-        else
+            
+        for (i = 0; i< numSpecFiles; i++)
         {
-            LOGI(L"Created boot:/lsvmload/specialize");
+            /* Copy file to boot partition */
+            if (EXT2Put(
+                bootfs, 
+                specFiles[i].PayloadData, 
+                specFiles[i].PayloadSize, 
+                specFiles[i].FileName,
+                EXT2_FILE_MODE_RW0_000_000) != EXT2_ERR_NONE)
+            {
+                LOGE(L"%a: failed to create boot:/lsvmload/specialize/%a", Str(func), specFiles[i].FileName);
+                goto done; 
+            }
+
         }
+
+        if (DeleteFile(imageHandle, path) != EFI_SUCCESS)
+        {
+            LOGE(L"%a: failed to delete spec file: %s", Str(func), Wcs(path));
+            goto done;
+        }
+
+        LOGI(L"Created boot:/lsvmload/specialize");
     }
 
     rc = 0;
@@ -230,6 +249,9 @@ done:
 
     if (specializeData)
         Free(specializeData);
+
+    if (specFiles)
+        FreeSpecFiles(specFiles, numSpecFiles);
 
     return rc;
 }

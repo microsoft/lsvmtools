@@ -4419,13 +4419,14 @@ static int _deserialize_specfile_command(
     const char* infile;
     const char* outfile;
     unsigned char* inData = NULL;
-    const unsigned char* outData = NULL;
     size_t inDataSize;
-    UINTN outDataSize;
+    SPECIALIZATION_RESULT *r = NULL;
+    UINTN rSize;
+    UINTN i = 0;
 
     if (argc != 3)
     {
-        fprintf(stderr, "Usage: %s INFILE OUTFILE\n", argv[0]);
+        fprintf(stderr, "Usage: %s INFILE OUTDIR\n", argv[0]);
         goto done;
     }
 
@@ -4438,18 +4439,27 @@ static int _deserialize_specfile_command(
         goto done;
     }
 
-    if (FindSpecFile(inData, inDataSize, &outData, &outDataSize) != 0)
+    if (ExtractSpecFiles(inData, inDataSize, &r, &rSize) != 0)
     {
-        fprintf(stderr, "%s: failed to find spec file: %s\n", argv[0], infile);
+        fprintf(stderr, "%s: failed to extract spec files.%s\n", argv[0], infile);
         goto done;
     }
 
-    if (PutFile(outfile, outData, outDataSize) != 0)
+    for (i = 0; i < rSize; i++)
     {
-        fprintf(stderr, "%s: failed to write file: %s\n", argv[0], outfile);
-        goto done;
+        char path[4096] = {0};
+        size_t sz = strlen(outfile);
+        memcpy(path, outfile, sz);
+        path[sz] = '/';
+        memcpy(path + sz + 1, r[i].FileName, strlen(r[i].FileName));
+
+        if (PutFile(path, r[i].PayloadData, r[i].PayloadSize) != 0)
+        {
+            fprintf(stderr, "%s: failed to write file: %s\n", argv[0], outfile);
+            goto done;
+        } 
     }
-  
+
     status = 0;
 
 done: 
@@ -4457,7 +4467,11 @@ done:
     {
         free(inData);
     }
-    /* We do NOT free outData, since FindSpecFile sets outfile to an offset in inData. */
+    
+    if (r != NULL)
+    {
+        FreeSpecFiles(r, rSize);
+    }
     return status;
 }
 
