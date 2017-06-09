@@ -36,6 +36,8 @@
 #include "log.h"
 #include "progress.h"
 
+#define LSVMLOAD_SPEC_DIR "/lsvmload/specialize"
+
 /* Functions to handle different encryption modes. */
 typedef int (*SpecFunc)(SECURE_SPECIALIZATION*, const UINT8*, UINTN, UINT8**, UINTN*);
 static int _AES_CBC_Decrypt(SECURE_SPECIALIZATION*, const UINT8*, UINTN, UINT8**, UINTN*);
@@ -209,7 +211,7 @@ int LoadDecryptCopySpecializeFile(
 
         if (EXT2MkDir(
             bootfs,
-            "/lsvmload/specialize",
+            LSVMLOAD_SPEC_DIR,
             EXT2_DIR_MODE_RWX_R0X_R0X) != EXT2_ERR_NONE)
         {
             LOGE(L"%a: failed to create boot:/lsvmload/specialize", Str(func));
@@ -218,12 +220,25 @@ int LoadDecryptCopySpecializeFile(
             
         for (i = 0; i< numSpecFiles; i++)
         {
+            UINT32 filePathLen = Strlen(specFiles[i].FileName);
+            char* path = (char*) Malloc(sizeof(LSVMLOAD_SPEC_DIR) + 1 + filePathLen);
+            if (path == NULL)
+            {
+                LOGE(L"%a: failed allocate memory for path: %a", Str(func), specFiles[i].FileName);
+                goto done;
+            }
+
+            Memcpy(path, LSVMLOAD_SPEC_DIR, sizeof(LSVMLOAD_SPEC_DIR) - 1);
+            path[sizeof(LSVMLOAD_SPEC_DIR) - 1] = '/';
+            Memcpy(path + sizeof(LSVMLOAD_SPEC_DIR), specFiles[i].FileName, filePathLen);
+            path[sizeof(LSVMLOAD_SPEC_DIR) + filePathLen] = 0;
+
             /* Copy file to boot partition */
             if (EXT2Put(
                 bootfs, 
                 specFiles[i].PayloadData, 
                 specFiles[i].PayloadSize, 
-                specFiles[i].FileName,
+                path,
                 EXT2_FILE_MODE_RW0_000_000) != EXT2_ERR_NONE)
             {
                 LOGE(L"%a: failed to create boot:/lsvmload/specialize/%a", Str(func), specFiles[i].FileName);
