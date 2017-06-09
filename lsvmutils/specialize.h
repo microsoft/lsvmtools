@@ -60,24 +60,29 @@ typedef struct _SPECIALIZATION_CLEAR_DATA_FILE_ENTRY
 
 #define SPECIALIZATION_CLEAR_DATA_FILE_ENTRY_SIZE   (sizeof(SPECIALIZATION_CLEAR_DATA_FILE_ENTRY))
 
-typedef struct _SPECIALIZATION_RESULT
+typedef struct _SPECIALIZATION_FILE
 {
     char* FileName;
     UINT8* PayloadData;
     UINT32 PayloadSize; 
-} SPECIALIZATION_RESULT, *PSPECIALIZATION_RESULT;
+} SPECIALIZATION_FILE, *PSPECIALIZATION_FILE;
 
 /* Parses the specialization file format and returns the list of files + data in the
  * SPECIALIZATION_RESULT format.. */
 int ExtractSpecFiles(
     const UINT8* data,
     UINTN size,
-    SPECIALIZATION_RESULT** result,
-    UINTN* resultSize
-    );
+    SPECIALIZATION_FILE** result,
+    UINTN* resultSize);
+
+int CombineSpecFiles(
+    const SPECIALIZATION_FILE* files,
+    UINT32 numFiles,
+    UINT8** result,
+    UINT32* resultSize);
 
 void FreeSpecFiles(
-    SPECIALIZATION_RESULT* r,
+    SPECIALIZATION_FILE* r,
     UINTN rSize);
 
 #endif /* _lsvmutils_specialize_h */

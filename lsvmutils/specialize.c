@@ -32,6 +32,7 @@
 #include "specialize.h"
 #include "alloc.h"
 #include "strings.h"
+#include "print.h"
 
 static BOOLEAN _Equals(CHAR16* p1, char* p2, UINTN s1, UINTN s2)
 {
@@ -53,7 +54,7 @@ static BOOLEAN _Equals(CHAR16* p1, char* p2, UINTN s1, UINTN s2)
 static int _WriteSingleSpecFile(
     const UINT8* dataCur,
     SPECIALIZATION_CLEAR_DATA_FILE_ENTRY* entry,
-    SPECIALIZATION_RESULT* result)
+    SPECIALIZATION_FILE* result)
 {
     /* FileNameSize does not have null terminator. */
     UINTN i = 0;
@@ -84,8 +85,8 @@ static int _WriteSingleSpecFile(
         fileNameSize = (sizeof(SPEC_SPECIALIZE_FILENAME) - 1) * sizeof(CHAR16);
     }
     
-    resultFileNameSize = fileNameSize / sizeof(CHAR16) + 1;
-    result->FileName = (char *) Malloc(resultFileNameSize);
+    resultFileNameSize = fileNameSize / sizeof(CHAR16);
+    result->FileName = (char *) Malloc(resultFileNameSize + 1);
     if (result->FileName == NULL)
     {
         goto CleanupErr;
@@ -101,8 +102,8 @@ static int _WriteSingleSpecFile(
     {
         result->FileName[i] = (char) fileName[i];
     }
-    fileName[resultFileNameSize] = 0;
-    
+    result->FileName[resultFileNameSize] = 0;    
+
     Memcpy(result->PayloadData, dataCur + entry->FilePayloadOffset, entry->FilePayloadSize);
     result->PayloadSize = entry->FilePayloadSize;
     rc = 0;
@@ -124,11 +125,11 @@ Cleanup:
     {
         Free(fileNameTmp);
     }
-    return -rc;
+    return rc;
 }
 
 static void _CleanupSpecFilesList(
-    SPECIALIZATION_RESULT* result,
+    SPECIALIZATION_FILE* result,
     UINTN resultSize)
 {
     UINTN i = 0;
@@ -136,6 +137,7 @@ static void _CleanupSpecFilesList(
     {
         Free(result->FileName);
         Free(result->PayloadData);
+        result++;
     }
 }
 
@@ -144,11 +146,12 @@ static int _WriteSpecResults(
     SPECIALIZATION_CLEAR_DATA_HEADER* hdr,
     const UINT8* data,
     UINTN size,
-    SPECIALIZATION_RESULT* result,
+    SPECIALIZATION_FILE* result,
     UINTN resultSize)
 {
     const UINT8* dataCur = data;
     UINT32 i = 0;
+    int rc = -1;
 
     if (resultSize != hdr->FileCount)
     {
@@ -174,7 +177,7 @@ static int _WriteSpecResults(
             goto Cleanup;
         }
 
-        if (_WriteSingleSpecFile(dataCur, entry, &result[i]) != 0)
+        if (_WriteSingleSpecFile(dataCur, entry, result + i) != 0)
         {
             goto Cleanup;
         }
@@ -187,7 +190,8 @@ static int _WriteSpecResults(
         }
         dataCur += max;
     }
-    return 0;
+    rc = 0;
+    return rc;
 
 Cleanup:
     /* We allocated some memory from _WriteSingleSpecFile that we should clean up. */
@@ -198,11 +202,11 @@ Cleanup:
 int ExtractSpecFiles(
     const UINT8* data,
     UINTN size,
-    SPECIALIZATION_RESULT** result,
+    SPECIALIZATION_FILE** result,
     UINTN* resultSize)
 {
     SPECIALIZATION_CLEAR_DATA_HEADER* hdr;
-    SPECIALIZATION_RESULT* resultLocal = NULL;
+    SPECIALIZATION_FILE* resultLocal = NULL;
     int rc = -1;
 
      /* Check size of data */
@@ -216,7 +220,7 @@ int ExtractSpecFiles(
     data += sizeof(*hdr);
     size -=  sizeof(*hdr);
 
-    resultLocal = (SPECIALIZATION_RESULT*) Malloc(hdr->FileCount * sizeof(SPECIALIZATION_RESULT));
+    resultLocal = (SPECIALIZATION_FILE*) Malloc(hdr->FileCount * sizeof(SPECIALIZATION_FILE));
     if (resultLocal == NULL)
     {
         goto Cleanup;
@@ -239,8 +243,68 @@ Cleanup:
     return rc;
 }
 
+int CombineSpecFiles(
+    const SPECIALIZATION_FILE* files,
+    UINT32 numFiles,
+    UINT8** result,
+    UINT32* resultSize)
+{
+    UINT32 i;
+    UINT8* resultLocal = NULL;
+    UINT32 totalSize = SPECIALIZATION_CLEAR_DATA_HEADER_SIZE +
+                       numFiles * SPECIALIZATION_CLEAR_DATA_FILE_ENTRY_SIZE;
+
+    for (i = 0; i < numFiles; i++)
+    {
+        totalSize += files[i].PayloadSize + sizeof(CHAR16)*Strlen(files[i].FileName);
+    }
+
+    resultLocal = (UINT8*) Malloc(totalSize);
+    if (resultLocal == NULL)
+    {
+        return -1;
+    }
+    *result = resultLocal;
+    *resultSize = totalSize;
+
+    /* Set main header. */
+    {
+        SPECIALIZATION_CLEAR_DATA_HEADER* tmp = (SPECIALIZATION_CLEAR_DATA_HEADER*) resultLocal;
+        tmp->Length = totalSize;
+        tmp->FileCount = numFiles;
+        resultLocal += sizeof(*tmp);
+        
+    }
+
+    /* Now do each individual file. */
+    for (i = 0; i < numFiles; i++)
+    {
+        SPECIALIZATION_CLEAR_DATA_FILE_ENTRY* entry;
+        UINT32 j;
+        
+        /* Set the entry values */ 
+        entry = (SPECIALIZATION_CLEAR_DATA_FILE_ENTRY*) resultLocal;    
+        entry->FileType = 0;
+        entry->FileNameSize = Strlen(files[i].FileName) * sizeof(CHAR16);
+        entry->FileNameOffset = SPECIALIZATION_CLEAR_DATA_FILE_ENTRY_SIZE;
+        entry->FilePayloadSize = files[i].PayloadSize;
+        entry->FilePayloadOffset = entry->FileNameOffset + entry->FileNameSize;
+
+        /* Copy the actual data. */
+        resultLocal += sizeof(*entry);
+        for (j = 0; j < entry->FileNameSize / sizeof(CHAR16); j++)
+        {
+            *((CHAR16*) resultLocal + j) = (CHAR16) files[i].FileName[j];
+        }
+        resultLocal += entry->FileNameSize;
+        Memcpy(resultLocal, files[i].PayloadData, files[i].PayloadSize);
+        resultLocal += entry->FilePayloadSize;
+    }
+    return 0;
+}
+
 void FreeSpecFiles(
-    SPECIALIZATION_RESULT* r,
+    SPECIALIZATION_FILE* r,
     UINTN rSize)
 {
     _CleanupSpecFilesList(r, rSize);

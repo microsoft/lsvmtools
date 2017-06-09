@@ -142,7 +142,7 @@ int LoadDecryptCopySpecializeFile(
     UINTN mkSize;
     UINT8* specializeData = NULL;
     UINTN specializeSize = 0;
-    SPECIALIZATION_RESULT* specFiles = NULL;
+    SPECIALIZATION_FILE* specFiles = NULL;
     UINTN numSpecFiles;
 
     /* Check for null parameters */
