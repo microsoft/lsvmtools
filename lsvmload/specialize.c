@@ -31,9 +31,12 @@
 #include <lsvmutils/efifile.h>
 #include <lsvmutils/alloc.h>
 #include <lsvmutils/luksblkdev.h>
+#include <lsvmutils/specialize.h>
 #include "globals.h"
 #include "log.h"
 #include "progress.h"
+
+#define LSVMLOAD_SPEC_DIR "/lsvmload/specialize"
 
 /* Functions to handle different encryption modes. */
 typedef int (*SpecFunc)(SECURE_SPECIALIZATION*, const UINT8*, UINTN, UINT8**, UINTN*);
@@ -141,6 +144,8 @@ int LoadDecryptCopySpecializeFile(
     UINTN mkSize;
     UINT8* specializeData = NULL;
     UINTN specializeSize = 0;
+    SPECIALIZATION_FILE* specFiles = NULL;
+    UINTN numSpecFiles;
 
     /* Check for null parameters */
     if (!imageHandle || !bootdev || !path)
@@ -153,6 +158,7 @@ int LoadDecryptCopySpecializeFile(
     if (FileExists(imageHandle, path) == EFI_SUCCESS)
     {
         SECURE_SPECIALIZATION* spec;
+        UINTN i;
 
         /* Load the file into memory */
         if (EFILoadFile(imageHandle, path, &data, &size) != EFI_SUCCESS)
@@ -190,23 +196,64 @@ int LoadDecryptCopySpecializeFile(
 
         LOGI(L"Loaded %s", Wcs(path));
 
+        if (ExtractSpecFiles(
+            specializeData,
+            specializeSize,
+            &specFiles,
+            &numSpecFiles) != 0)
+        {
+            LOGE(L"%a: failed to deserialize spec data", Str(func));
+            goto done;         
+        }
+
+
         PutProgress(L"Creating /lsvmload/specialize");
 
-        /* Copy file to boot partition */
-        if (EXT2Put(
-            bootfs, 
-            specializeData, 
-            specializeSize, 
-            "/lsvmload/specialize",
-            EXT2_FILE_MODE_RW0_000_000) != EXT2_ERR_NONE)
+        if (EXT2MkDir(
+            bootfs,
+            LSVMLOAD_SPEC_DIR,
+            EXT2_DIR_MODE_RWX_R0X_R0X) != EXT2_ERR_NONE)
         {
             LOGE(L"%a: failed to create boot:/lsvmload/specialize", Str(func));
             goto done;
         }
-        else
+            
+        for (i = 0; i< numSpecFiles; i++)
         {
-            LOGI(L"Created boot:/lsvmload/specialize");
+            UINT32 filePathLen = Strlen(specFiles[i].FileName);
+            char* path = (char*) Malloc(sizeof(LSVMLOAD_SPEC_DIR) + 1 + filePathLen);
+            if (path == NULL)
+            {
+                LOGE(L"%a: failed allocate memory for path: %a", Str(func), specFiles[i].FileName);
+                goto done;
+            }
+
+            Memcpy(path, LSVMLOAD_SPEC_DIR, sizeof(LSVMLOAD_SPEC_DIR) - 1);
+            path[sizeof(LSVMLOAD_SPEC_DIR) - 1] = '/';
+            Memcpy(path + sizeof(LSVMLOAD_SPEC_DIR), specFiles[i].FileName, filePathLen);
+            path[sizeof(LSVMLOAD_SPEC_DIR) + filePathLen] = 0;
+
+            /* Copy file to boot partition */
+            if (EXT2Put(
+                bootfs, 
+                specFiles[i].PayloadData, 
+                specFiles[i].PayloadSize, 
+                path,
+                EXT2_FILE_MODE_RW0_000_000) != EXT2_ERR_NONE)
+            {
+                LOGE(L"%a: failed to create boot:/lsvmload/specialize/%a", Str(func), specFiles[i].FileName);
+                goto done; 
+            }
+
         }
+
+        if (DeleteFile(imageHandle, path) != EFI_SUCCESS)
+        {
+            LOGE(L"%a: failed to delete spec file: %s", Str(func), Wcs(path));
+            goto done;
+        }
+
+        LOGI(L"Created boot:/lsvmload/specialize");
     }
 
     rc = 0;
@@ -217,6 +264,9 @@ done:
 
     if (specializeData)
         Free(specializeData);
+
+    if (specFiles)
+        FreeSpecFiles(specFiles, numSpecFiles);
 
     return rc;
 }

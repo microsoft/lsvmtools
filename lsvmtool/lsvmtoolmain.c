@@ -82,6 +82,7 @@
 #include <xz/lzmaextras.h>
 #include <lsvmutils/policy.h>
 #include <lsvmutils/lsvmloadpolicy.h>
+#include <lsvmutils/specialize.h>
 #include <zlib.h>
 #include "zlibextras.h"
 #include "dbxupdate.h"
@@ -4410,6 +4411,219 @@ done:
     return status;
 }
 
+static int _serialize_specfile_command(
+    int argc,
+    const char **argv)
+{ 
+    const char* indir;
+    DIR* dir = NULL;
+    struct dirent *files = NULL;
+    UINT32 numfiles = 0;
+    SPECIALIZATION_FILE* specFiles = NULL;
+    UINT32 numSpecFiles = 0;
+    size_t pathLen;
+    const char* outfile;
+    UINT8* outData = NULL;
+    UINT32 outDataSize;
+    int status = -1;
+    char path[PATH_MAX];
+
+    if (argc != 3)
+    {
+        fprintf(stderr, "Usage: %s INDIR OUTFILE\n", argv[0]);
+        goto done;
+    }
+
+    indir = argv[1];
+    outfile = argv[2];
+    pathLen = strlen(indir);
+    
+    if (pathLen + 1 + NAME_MAX + 1 > sizeof(path))
+    {
+        fprintf(stderr, "%s: directory path too long: %s\n", argv[0], indir);
+        return -1;
+    }
+
+    /* Get the number of files, so we can allocate. */
+    dir = opendir(indir);
+    if (dir == NULL)
+    {
+        fprintf(stderr, "%s: Failed to open dir: %s\n", argv[0], indir);
+        return -1;
+    }
+
+    while ((files = readdir(dir)) != NULL)
+    {
+        numfiles++;
+    }
+
+    if (closedir(dir) != 0)
+    {
+        fprintf(stderr, "%s: failed to close dir: %s\n", argv[0], indir);
+        return -1;
+    }
+    dir = NULL;
+
+    /* Now actually get the files. */ 
+    specFiles = (SPECIALIZATION_FILE*) malloc(numfiles * sizeof(SPECIALIZATION_FILE));
+    if (specFiles == NULL)
+    {
+        fprintf(stderr, "%s: failed to allocate spec files\n", argv[0]);
+        goto done;
+    }
+
+    dir = opendir(indir);
+    if (dir == NULL)
+    {
+        fprintf(stderr, "%s: Failed to open dir: %s\n", argv[0], indir);
+        return -1;
+    }
+
+    strncpy(path, indir, pathLen);
+    while ((files = readdir(dir)) != NULL)
+    {
+        struct stat statbuf;       
+        SPECIALIZATION_FILE* cur = specFiles + numSpecFiles;
+        size_t tmpSize;
+
+        path[pathLen] = '/';
+        strncpy(path + pathLen + 1, files->d_name, NAME_MAX);
+        path[pathLen + 1 + NAME_MAX] = 0;
+
+        if (lstat(path, &statbuf) != 0)
+        {
+            fprintf(stderr, "%s: Failed to stat: %s\n", argv[0], path);
+            goto done;
+        }
+
+        if (!S_ISREG(statbuf.st_mode))
+        {
+            continue;
+        }
+
+        cur->FileName = (char*) malloc(strlen(files->d_name) + 1);
+        if (cur->FileName == NULL)
+        {
+            fprintf(stderr, "%s: Failed to allocate specfile: %s\n", argv[0], path);
+            goto done;
+        }
+        strncpy(cur->FileName, files->d_name, strlen(files->d_name) + 1);
+
+
+        if (LoadFile(path, 0, &cur->PayloadData, &tmpSize) != 0)
+        {
+            free(cur->FileName);
+            fprintf(stderr, "%s: Failed to load file. %s\n", argv[0], path);
+            goto done; 
+        }        
+
+        /* Truncate since we don't expect anything > 32 bits. */ 
+        cur->PayloadSize = (UINT32) tmpSize;
+        numSpecFiles++;
+    } 
+
+    if (CombineSpecFiles(
+            specFiles,
+            numSpecFiles,
+            &outData,
+            &outDataSize) != 0)
+    {
+        fprintf(stderr, "%s: failed to combine spec file.\n", argv[0]);
+        goto done;
+    }
+
+    if (PutFile(outfile, outData, outDataSize) != 0)
+    {
+        fprintf(stderr, "%s: failed to put outfile: %s\n", argv[0], outfile);
+        goto done;
+    }
+
+    status = 0;
+
+
+done:
+    if (dir != NULL)
+    {
+        closedir(dir);
+    }
+
+    if (specFiles != NULL)
+    {
+        FreeSpecFiles(specFiles, numSpecFiles);
+    }
+
+    if (outData != NULL)
+    {
+        free(outData);
+    }
+
+    return status;
+}
+
+static int _deserialize_specfile_command(
+    int argc,
+    const char **argv)
+{
+    int status = 1;
+    const char* infile;
+    const char* outfile;
+    unsigned char* inData = NULL;
+    size_t inDataSize;
+    SPECIALIZATION_FILE *r = NULL;
+    UINTN rSize;
+    UINTN i = 0;
+
+    if (argc != 3)
+    {
+        fprintf(stderr, "Usage: %s INFILE OUTDIR\n", argv[0]);
+        goto done;
+    }
+
+    infile = argv[1];
+    outfile = argv[2];
+
+    if (LoadFile(infile, 1, &inData, &inDataSize) != 0)
+    {
+        fprintf(stderr, "%s: failed to read: %s\n", argv[0], infile);
+        goto done;
+    }
+
+    if (ExtractSpecFiles(inData, inDataSize, &r, &rSize) != 0)
+    {
+        fprintf(stderr, "%s: failed to extract spec files.%s\n", argv[0], infile);
+        goto done;
+    }
+
+    for (i = 0; i < rSize; i++)
+    {
+        char path[4096] = {0};
+        size_t sz = strlen(outfile);
+        memcpy(path, outfile, sz);
+        path[sz] = '/';
+        memcpy(path + sz + 1, r[i].FileName, strlen(r[i].FileName));
+
+        if (PutFile(path, r[i].PayloadData, r[i].PayloadSize) != 0)
+        {
+            fprintf(stderr, "%s: failed to write file: %s\n", argv[0], outfile);
+            goto done;
+        } 
+    }
+
+    status = 0;
+
+done: 
+    if (inData != NULL)
+    {
+        free(inData);
+    }
+    
+    if (r != NULL)
+    {
+        FreeSpecFiles(r, rSize);
+    }
+    return status;
+}
+
 /*
 **==============================================================================
 **
@@ -4794,6 +5008,16 @@ static Command _commands[] =
         "deserializekeys",
         "Deserializes the boot+rootkey from unsealed data",
         _deserializekeys_command,
+    },
+    {
+        "serialize_specfile",
+        "Serialize files in a directory to generate a specialization file.",
+        _serialize_specfile_command,
+    },
+    {
+        "deserialize_specfile",
+        "Deserializes the specialization file",
+        _deserialize_specfile_command,
     },
 };
 
