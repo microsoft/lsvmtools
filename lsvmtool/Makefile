@@ -373,12 +373,10 @@ test-pcrs256:
 ##==============================================================================
 
 tests:
-	@ $(MAKE) -s lsvmtool-tests
 	@ $(MAKE) -s cpio-tests
 	@ $(MAKE) -s ext2-tests MKE2FSFLAGS="-b 1024"
 	@ $(MAKE) -s ext2-tests MKE2FSFLAGS="-b 4096"
 	@ $(MAKE) -s ext2-tests MKE2FSFLAGS="-b 2048"
-	@ $(MAKE) -s test-seal
 	@ $(MAKE) -s xz-tests
 	@ $(MAKE) -s gzip-tests
 	@ $(MAKE) -s testxz
@@ -386,6 +384,10 @@ tests:
 	@ $(MAKE) -s strtok-tests
 	@ $(MAKE) -s test-crypt
 	@ $(MAKE) -s sha-tests
+
+tpm-tests:
+	@ $(MAKE) -s test-seal
+	@ $(MAKE) -s lsvmtool-tests
 	@ $(MAKE) -s test-pcrs
 	@ $(MAKE) -s test-pcrs256
 
