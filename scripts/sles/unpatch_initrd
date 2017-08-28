@@ -18,25 +18,6 @@ rm -rf ${dest}
 
 ##==============================================================================
 ##
-## remove lsvmtool-password-agent:
-##
-##==============================================================================
-
-dest=/sbin/lsvmtool-password-agent
-rm -rf ${dest}
-
-systemd_path=/usr/lib/systemd/system
-dest=${systemd_path}/lsvmtool-password-agent.path
-rm -rf ${dest}
-
-dest=${systemd_path}/sysinit.target.wants/lsvmtool-password-agent.path
-rm -rf ${dest}
-
-dest=${systemd_path}/lsvmtool-password-agent.service
-rm -rf ${dest}
-
-##==============================================================================
-##
 ## remove module-setup.sh:
 ##
 ##==============================================================================

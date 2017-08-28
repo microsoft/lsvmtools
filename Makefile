@@ -23,7 +23,7 @@ define NL
 
 endef
 
-DIRS = striplic 3rdparty posix lsvmutils lsvmtool lsvmload policy password-agent
+DIRS = striplic 3rdparty posix lsvmutils lsvmtool lsvmload policy
 
 all:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NL) )
