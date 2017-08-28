@@ -36,4 +36,5 @@ installkernel()
 {
     instmods tpm_crb
     instmods hyperv-keyboard
+    instmods xts
 }
