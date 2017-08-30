@@ -42,7 +42,7 @@ patch_crypttab()
     ### Get the UUID of the dev-mapper device:
     uuid=`blkid $luksdev | cut -d '"' -f 2`
     old="^$devmapbase\>.*"
-    new="$devmapbase UUID=$uuid none luks,discard"
+    new="$devmapbase UUID=$uuid /etc/lsvmload/bootkey luks,discard"
 
     ### Test whether /etc/crypttab already has a boot entry:
     grep -q -s "^$devmapbase\>" /etc/crypttab

@@ -25,11 +25,6 @@ check()
 install()
 {
     inst "lsvmtool"
-    inst "lsvmtool-password-agent"
-    inst "$systemdsystemunitdir/lsvmtool-password-agent.path" 
-    inst "$systemdsystemunitdir/lsvmtool-password-agent.service"
-    mkdir -p "${initdir}${systemdsystemconfdir}/sysinit.target.wants"
-    inst "$systemdsystemunitdir/sysinit.target.wants/lsvmtool-password-agent.path"
 }
 
 installkernel()
