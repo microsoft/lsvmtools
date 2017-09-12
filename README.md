@@ -1,7 +1,7 @@
 LSVMTools
 =========
 
-The LSVMTools project provides tools for shielding Linux VMs as the execute
+The LSVMTools project provides tools for shielding Linux VMs executing
 in the Microsoft(R) Windows Hyper-V environment.
 
 ### Building
