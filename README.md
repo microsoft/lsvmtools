@@ -85,6 +85,9 @@ Use the following commands to install the distibution.
 # tar zxvf lsvmtools-1.0.0-x86_64.tar.gz
 # cd lsvmtools-1.0.0-x86_64
 # ./install
+
+Created /opt/lsvmtools-1.0.0
+
 ```
 
 This installs LSVMTools in the following location.
@@ -105,6 +108,25 @@ To run LSVMPREP, execute the following commands as root.
 ```
 # cd /opt/lsvmtools-1.0.0
 # ./lsvmprep
+
+***************************************************
+*     ____    _   _   _ _____ ___ ___  _   _      *
+*    / ___|  / \ | | | |_   _|_ _/ _ \| \ | |     *
+*   | |     / _ \| | | | | |  | | | | |  \| |     *
+*   | |___ / ___ \ |_| | | |  | | |_| | |\  |     *
+*    \____/_/   \_\___/  |_| |___\___/|_| \_|     *
+*                                                 *
+*                                                 *
+* LSVMPREP is about to encrypt the boot partition *
+* and make irreversible configuration changes to  *
+* this machine. If you are certain you want to    *
+* proceed, type YES in uppercase and then press   *
+* enter; else press ENTER to terminate.           *
+*                                                 *
+***************************************************
+
+> _
+
 ```
 
 If LSVMPREP runs successfully, the image is ready to be templatized. See
