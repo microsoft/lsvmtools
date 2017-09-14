@@ -73,9 +73,9 @@ Installing
 ----------
 
 This section explains how to install from a binary distribution. Binary 
-distributions can be found here:
+distributions can be downloaded from the following link.
 
-[Binary Distributions](binaries)
+- [Binary Distributions](binaries)
 
 These distributions include **LSVMPREP** and a signed **LSVMLOAD**.
 
@@ -87,7 +87,7 @@ Use the following commands to install the distibution.
 # ./install
 ```
 
-This installs LSVMTools here:
+This installs LSVMTools in the following location.
 
 ```
 /opt/lsvmtools-1.0.0
@@ -96,8 +96,9 @@ This installs LSVMTools here:
 Running LSVMPREP
 ----------------
 
-**Caution: Running LSVMPREP may render a Linux system unusable, so only
-run LSVMPREP for the purposes of creating an image for templatization.**
+**Caution: Running LSVMPREP encrypts the boot partition and makes irreversible
+configuration changes to a virtual machine. Only run LSVMPREP to prepare an
+image for templatization.**
 
 To run LSVMPREP, execute the following commands as root.
 
@@ -107,20 +108,26 @@ To run LSVMPREP, execute the following commands as root.
 ```
 
 If LSVMPREP runs successfully, the image is ready to be templatized. See
-[LSVM How-To](doc/LSVM_How_To.pdf) for details.
+[LSVM How-To](doc/LSVM_How_To.pdf) for what to do next.
 
 Building
 --------
 
 This section explains how to build LSVMTools from source, but note that 
-LSVMPREP requires a signed LSVMLOAD image. This component must be downloaded 
-separately (see the previous section for details).
+LSVMPREP requires a signed LSVMLOAD image, which must be downloaded separately 
+(see the previous section for details).
 
 To build LSVMTools, type these commands.
 
 ```
 # ./configure
 # make
+```
+
+To run the tests, type:
+
+```
+# make tests
 ```
 
 This builds LSVMPREP and an unsigned LSVMLOAD.
