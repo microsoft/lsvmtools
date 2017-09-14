@@ -27,7 +27,6 @@ DIRS = striplic 3rdparty posix lsvmutils lsvmtool lsvmload policy
 
 all:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NL) )
-	$(MAKE) -C lsvmtool autotests
 
 ##==============================================================================
 ##
@@ -186,7 +185,7 @@ grubby:
 	grubby --update-kernel=ALL --config-file=/etc/grub2-efi.cfg
 
 tests:
-	$(MAKE) -s -C lsvmtool tests
+	$(MAKE) -s -C lsvmtool autotests
 
 check: tests
 

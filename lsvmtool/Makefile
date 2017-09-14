@@ -64,8 +64,6 @@ LIBRARIES += -lposixlinux
 #LINKFLAGS = -static
 LINKFLAGS = -Wl,-gc-sections
 
-AUTOTESTS=$(TMPDIR)/autotests
-
 CLEAN += $(EXT2)
 CLEAN += $(VFAT)
 CLEAN += $(LSVMCPIO)
@@ -80,7 +78,6 @@ CLEAN += boot.cfg
 CLEAN += lsvmhashes
 CLEAN += initrd.cpio 
 CLEAN += initrd.cpio.gz 
-CLEAN += $(AUTOTESTS)
 
 PROGRAM=lsvmtool
 
@@ -390,12 +387,6 @@ tpm-tests:
 	@ $(MAKE) -s lsvmtool-tests
 	@ $(MAKE) -s test-pcrs
 	@ $(MAKE) -s test-pcrs256
-
-$(AUTOTESTS): $(LSVMTOOL)
-	@ $(MAKE) -s tests
-	@ touch $(AUTOTESTS)
-
-autotests: $(AUTOTESTS)
 
 ##==============================================================================
 ##
