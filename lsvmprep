@@ -152,6 +152,52 @@ esac
 
 ##==============================================================================
 ##
+## Ask for permissio to change the system
+##
+##==============================================================================
+
+
+ask_permission()
+{
+cat<<EOF
+
+***************************************************
+*     ____    _   _   _ _____ ___ ___  _   _      *
+*    / ___|  / \ | | | |_   _|_ _/ _ \| \ | |     *
+*   | |     / _ \| | | | | |  | | | | |  \| |     *
+*   | |___ / ___ \ |_| | | |  | | |_| | |\  |     *
+*    \____/_/   \_\___/  |_| |___\___/|_| \_|     *
+*           					  *
+*           					  *
+* LSVMPREP is about to encrypt the boot partition *
+* and make irreversible configuration  changes to *
+* this machine. If  you are  certain  you want to *
+* proceed, enter YES in  uppercase and then press *
+* enter; else press ENTER to terminate.           *
+*          					  *
+***************************************************
+
+EOF
+
+    echo -n "> "
+    read answer
+    echo ""
+
+    if [ "${answer}" != "YES" ]; then
+        echo "$0: no action taken"
+        echo ""
+        exit 1
+    fi
+
+    echo ""
+}
+
+ask_permission
+
+exit 0
+
+##==============================================================================
+##
 ## Resolve 'shim':
 ##
 ##==============================================================================
