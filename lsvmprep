@@ -906,6 +906,7 @@ cat<<EOF
 
 This image has been successfully prepared for templatization.
 
+The passphrase for the root partition is: passphrase
 The passphrase for the boot partition is: passphrase
 
 EOF
