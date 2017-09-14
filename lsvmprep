@@ -170,9 +170,9 @@ cat<<EOF
 *           					  *
 *           					  *
 * LSVMPREP is about to encrypt the boot partition *
-* and make irreversible configuration  changes to *
-* this machine. If  you are  certain  you want to *
-* proceed, type YES in  uppercase and  then press *
+* and make irreversible configuration changes to  *
+* this machine. If you are certain you want to    *
+* proceed, type YES in uppercase and then press   *
 * enter; else press ENTER to terminate.           *
 *          					  *
 ***************************************************
@@ -188,11 +188,35 @@ EOF
         echo ""
         exit 1
     fi
-
-    echo ""
 }
 
 ask_permission
+
+##==============================================================================
+##
+## check_root()
+##
+##==============================================================================
+
+check_root_passphrase()
+{
+    rootdev=`./scripts/rootdev`
+
+    if [ -z "${rootdev}" ]; then
+        echo "$0: failed to resolve root partition"
+        exit 1
+    fi
+
+    echo -n "passphrase" | cryptsetup luksDump --dump-master-key --key-file=- $rootdev 2> /dev/null > /dev/null
+
+    if [ "$?" != "0" ]; then
+        echo "$0: ERROR: The root partition passphrase must be 'passphrase'"
+        echo ""
+        exit 1
+    fi
+}
+
+check_root_passphrase
 
 ##==============================================================================
 ##
@@ -869,3 +893,22 @@ cp VERSION ${lsvmprepfile}
 
 # Run sanity check:
 ./sanity
+
+##==============================================================================
+##
+## final_word()
+##
+##==============================================================================
+
+final_word()
+{
+cat<<EOF
+
+This image has been successfully prepared for templatization.
+
+The passphrase for the boot partition is: passphrase
+
+EOF
+}
+
+final_word
