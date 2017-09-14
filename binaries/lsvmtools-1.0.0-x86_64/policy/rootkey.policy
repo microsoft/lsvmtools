@@ -1,2 +1,0 @@
-#include "bootkey.policy"
-:CAP:11

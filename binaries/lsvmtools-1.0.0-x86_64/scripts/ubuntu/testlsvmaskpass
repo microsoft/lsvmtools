@@ -1,4 +1,0 @@
-#!/bin/sh
-export cryptsource=/dev/sda2 
-export crypttarget=boot 
-bash ./lsvmaskpass ""
