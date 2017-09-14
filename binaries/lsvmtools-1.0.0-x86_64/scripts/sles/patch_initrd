@@ -1,0 +1,40 @@
+#!/bin/bash
+
+top=../..
+
+if [ "$#" != "0" ]; then
+    echo "Usage: $0"
+    exit 1
+fi
+
+##==============================================================================
+##
+## install lsvmtool:
+##
+##==============================================================================
+
+src=${top}/build/bin/lsvmtool
+dest=/sbin/lsvmtool
+install -D ${src} ${dest}
+
+if [ "$?" != "0" ]; then
+    echo "$0: install failed: ${src} => ${dest}"
+    exit 1
+fi
+
+##==============================================================================
+##
+## install module-setup.sh:
+##
+##==============================================================================
+
+dracut_module=90lsvm
+dracut_module_path=/usr/lib/dracut/modules.d/${dracut_module}
+
+src=${top}/scripts/module-setup.sh
+dest=${dracut_module_path}/module-setup.sh
+install -D ${src} ${dest}
+if [ "$?" != "0" ]; then
+    echo "$0: install failed: ${src} => ${dest}"
+    exit 1
+fi

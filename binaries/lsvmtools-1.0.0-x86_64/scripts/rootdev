@@ -1,0 +1,34 @@
+#!/bin/bash
+
+##
+## Check arguments:
+##
+
+if [ "$#" != 0 ]; then
+    echo "Usage $0"
+    exit 1
+fi
+
+##
+## Get the block device from /boot path:
+##
+. $(dirname "$0")/blkdev_utils
+path=/
+dev=$(mount_to_blkdev $path)
+
+##
+## If /dev/mapper path, then convert to underyling partition name:
+##
+
+echo $dev | grep /dev/mapper > /dev/null
+
+if [ "$?" == "0" ]; then
+    part=$(logical_dev_to_physical_dev "$dev")
+    if [ "$?" != 0 ]; then
+        exit 1
+    fi
+else
+    part=$dev
+fi
+
+echo $part

@@ -1,0 +1,285 @@
+#!/bin/bash
+
+. $(dirname "$0")/blkdev_utils
+
+##==============================================================================
+##
+## patch_crypttab(devmaproot)
+##
+##     Example: patch_crypttab /dev/mapper/boot
+##
+##==============================================================================
+
+patch_crypttab()
+{
+    local devmaproot
+    local devmapbase
+    local luksdev
+    local uuid
+    local old
+    local new
+
+    ### Check arguments:
+    if [ "$#" != 1 ]; then
+        echo "$0: patch_crypttab(): wrong # of args"
+        exit 1
+    fi
+
+    ### Example: "/dev/mapper/boot" and "boot"
+    devmaproot=$1
+    devmapbase=`basename $devmaproot`
+
+    ### Verify that $devmaproot is a LUKS partition:
+    luksdev=`logical_dev_to_physical_dev "$devmaproot"`
+
+    ### Fail is this is not a LUKS device:
+    cryptsetup isLuks $luksdev
+    if [ "$?" != "0" ]; then
+        echo "$0: $FUNCNAME(): not a LUKS parition: $luksdev"
+        exit 1
+    fi
+
+    ### Get the UUID of the dev-mapper device:
+    uuid=`blkid $luksdev | cut -d '"' -f 2`
+    old="^$devmapbase\>.*"
+    new="$devmapbase UUID=$uuid /etc/lsvmload/bootkey luks,discard"
+
+    ### Test whether /etc/crypttab already has a boot entry:
+    grep -q -s "^$devmapbase\>" /etc/crypttab
+
+    if [ "$?" == "0" ]; then
+        sed "s~$old~$new~g" /etc/crypttab > /etc/crypttab.tmp
+    else
+        cp /etc/crypttab /etc/crypttab.tmp
+        echo "$new" >> /etc/crypttab.tmp
+    fi
+
+    cp /etc/crypttab.tmp /etc/crypttab
+    rm -f /etc/crypttab.tmp
+
+    echo "Patched /etc/crypttab"
+}
+
+##==============================================================================
+##
+## patch_fstab(devmaproot,bootdevfs)
+##
+##     Example: patch_crypttab /dev/mapper/boot ext2
+##
+##==============================================================================
+
+patch_fstab()
+{
+    local devmaproot
+    local old
+    local new
+    local fs
+
+    ### Check arguments:
+    if [ "$#" != 2 ]; then
+        echo "$0: $FUNCNAME(): wrong # of args"
+        exit 1
+    fi
+
+    ### Example: "/dev/mapper/boot"
+    devmaproot=$1
+    fs=$2
+
+    ### Set old and new sed substitution strings:
+    old="^[^#].*[ \t]/\<boot\>[ \t].*"
+    new="$devmaproot /boot $fs defaults 0 0"
+
+    ### Fail if there is no /boot mount line:
+    grep -q -s "$old" /etc/fstab
+    if [ "$?" != "0" ]; then
+        echo "$0: $FUNCNAME(): /etc/fstab: /boot line missing"
+        exit 1
+    fi
+
+    sed "s~$old~$new~g" /etc/fstab > /etc/fstab.tmp
+    cp /etc/fstab.tmp /etc/fstab
+    rm -f /etc/fstab.tmp
+
+    echo "Patched /etc/fstab"
+}
+
+##==============================================================================
+##
+## resolve_boot_device(): bootdev
+##
+##==============================================================================
+
+resolve_boot_device()
+{
+    local dev
+
+    ### Check arguments:
+    if [ "$#" != 0 ]; then
+        echo "$0: $FUNCNAME(): wrong # of args"
+        return 1
+    fi
+
+    ### Get device of /boot:
+    dev=`mount_to_blkdev /boot`
+    if [ ! -b "$dev" ]; then
+        echo "$0: $FUNCNAME: failed to resolve device of /boot"
+        return 1
+    fi
+
+    bootdev=$dev
+    return 0
+}
+
+##==============================================================================
+##
+## is_luks_device(dev)
+##
+##==============================================================================
+
+is_luks_device()
+{
+    if [ "$#" != 1 ]; then
+        echo "$0: $FUNCNAME(): wrong # of args"
+        return 1
+    fi
+
+    dev=$1
+
+    echo $dev | grep -q -s /dev/mapper
+    return $?
+}
+
+##==============================================================================
+##
+## backup_boot_directory()
+##
+##     Creates backup of the /boot directory
+##
+##==============================================================================
+
+backup_boot_directory()
+{
+    local dirname
+
+    if [ "$#" != 1 ]; then
+        echo "$0: $FUNCNAME(): wrong # of args"
+        return 1
+    fi
+
+    dirname=$1
+
+    if [ -d "$dirname" ]; then
+        echo "$0: $FUNCNAME(): $dirname already exists!"
+        return 1
+    fi
+
+    mkdir -p $dirname
+    ( cd /; tar cf - boot ) | ( cd $dirname; tar xf - )
+    return 0
+}
+
+##==============================================================================
+##
+## luks_format(bootdev)
+##
+##     Reformat the boot parition as a LUKS partition.
+##
+##==============================================================================
+
+luks_format()
+{
+    local bootdev
+
+    if [ "$#" != 1 ]; then
+        echo "$0: $FUNCNAME(): wrong # of args"
+        return 1
+    fi
+
+    bootdev=$1
+
+    echo /dev/zero > $bootdev 2> /dev/null
+
+    echo -n "passphrase" | cryptsetup -v luksFormat --key-file=- $bootdev
+    return "$?"
+}
+
+echo -n "Checking /boot: "
+
+### Resolve the boot device from the /boot path:
+resolve_boot_device
+if [ "$?" != "0" ]; then
+    echo "$0: failed to resolve boot device"
+    exit 1
+fi
+
+### If already a LUKS device, exit with success:
+is_luks_device $bootdev
+if [ "$?" = 0 ]; then
+    echo "already encrypted"
+    exit 0
+fi
+
+echo "encrypting"
+
+### Forcibly unmount the ESP:
+umount -l /boot/efi
+
+### Backup the boot directory:
+backup_boot_directory /boot.backup
+if [ "$?" != 0 ]; then
+    echo "$0: failed to backup /boot directory"
+    exit 1
+fi
+
+### Forcibly unmount the boot directory
+umount -l /boot
+
+### Reformat /boot as LUKS device:
+luks_format $bootdev
+if [ "$?" != 0 ]; then
+    echo "$0: failed to reformat boot partition as LUKS partition"
+    exit 1
+fi
+
+### Open LUKS device:
+echo -n "passphrase" | cryptsetup luksOpen --key-file=- $bootdev boot
+if [ "$?" != "0" ]; then
+    echo "$0: luksFormat failed"
+    exit 1
+fi
+
+### Create EXT2 file system:
+mke2fs -j /dev/mapper/boot
+if [ "$?" != "0" ]; then
+    echo "$0: mke2fs failed"
+    exit 1
+fi
+
+### Mount new EXT2 parition:
+mount /dev/mapper/boot /boot
+if [ "$?" != "0" ]; then
+    echo "$0: failed to mount /dev/mapper/boot"
+    exit 1
+fi
+
+### Copy files to new parition:
+( cd /boot.backup; tar cf - boot ) | (cd /; tar xf - )
+
+### Remount the ESP:
+mount /boot/efi
+
+### Patch /etc/cryptab:
+patch_crypttab /dev/mapper/boot
+
+### Get the boot dev file system:
+bootdevfs=$(blkid /dev/mapper/boot | grep -o "TYPE=\"[^\"]*\"" | cut -d "=" -f2 | sed 's/\"//g')
+if [ -z "$bootdevfs" ]; then
+   echo "$0: Failed to get bootdev file system"
+   exit 1
+fi
+
+### Patch /etc/fstab:
+patch_fstab /dev/mapper/boot "$bootdevfs"
+
+### Remove temporary files:
+rm -rf /boot.backup

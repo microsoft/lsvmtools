@@ -123,7 +123,7 @@ To build LSVMTools, type these commands.
 # make
 ```
 
-This will run some unit tests as well.
+This builds LSVMPREP and an unsigned LSVMLOAD.
 
 License
 -------

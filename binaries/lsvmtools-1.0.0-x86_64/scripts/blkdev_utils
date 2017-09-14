@@ -1,0 +1,43 @@
+#!/bin/bash
+
+##==============================================================================
+##
+## mount_to_blkdev(mountpoint)
+##
+##     Example: mount_to_blkdev /boot
+##
+##==============================================================================
+mount_to_blkdev()
+{
+    local path="$1"
+    mount | grep "[[:space:]]$path[[:space:]]" | awk '{print $1}'
+}
+
+##==============================================================================
+##
+## logical_dev_to_physical_dev(logical_dev)
+##
+##     Example: logical_dev_to_physical_dev /dev/mapper/boot
+##
+##==============================================================================
+logical_dev_to_physical_dev()
+{
+    local dev="$1"
+    local devbase=$(basename "$dev")
+    local partdev=$(dmsetup ls --tree -o compact,blkdevname,notrunc | grep "$devbase" | awk -F " " '{print $(NF-1)}' | sed 's/[<>]//g')
+    printf "/dev/$partdev"
+}
+
+##==============================================================================
+##
+## physical_dev_to_gpt_uuid(physical_dev)
+##
+##     Example: physical_dev_to_gpt_uuid /dev/sda2
+##
+##==============================================================================
+physical_dev_to_gpt_uuid()
+{
+    local dev="$1"
+    local devbase=$(basename "$dev")
+    ls -l /dev/disk/by-partuuid | grep "$devbase" | awk '{print $(NF-2)}'
+}
