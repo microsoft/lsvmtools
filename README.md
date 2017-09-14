@@ -87,7 +87,6 @@ Use the following commands to install the distibution.
 # ./install
 
 Created /opt/lsvmtools-1.0.0
-
 ```
 
 This installs LSVMTools in the following location.
@@ -126,7 +125,6 @@ To run LSVMPREP, execute the following commands as root.
 ***************************************************
 
 > _
-
 ```
 
 If LSVMPREP runs successfully, the image is ready to be templatized. See
