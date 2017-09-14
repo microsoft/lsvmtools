@@ -172,7 +172,7 @@ cat<<EOF
 * LSVMPREP is about to encrypt the boot partition *
 * and make irreversible configuration  changes to *
 * this machine. If  you are  certain  you want to *
-* proceed, enter YES in  uppercase and then press *
+* proceed, type YES in  uppercase and  then press *
 * enter; else press ENTER to terminate.           *
 *          					  *
 ***************************************************
