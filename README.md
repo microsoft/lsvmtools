@@ -69,6 +69,15 @@ LSVMLOAD works using unmodified SHIM and GRUB2 executables, making it
 possible to configure a Linux environment for shielding without having
 to change any programs along the boot chain.
 
+Supported Linux distributions
+-----------------------------
+
+LSVMTool current supports the following Linux distributions.
+
+- Ubuntu 16.04 LTS with the 4.4 kernel
+- Red Hat Enterprise Linux 7.3
+- SUSE Linux Enterprise Server 12 Service Pack 2
+
 Installing
 ----------
 
