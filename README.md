@@ -151,6 +151,14 @@ To run the tests, type:
 ```
 # make tests
 ```
+Recovering the LUKS keys
+------------------------
+
+In case anything goes wrong, use the following command to recover LUKS keys.
+
+```
+# dmsetup table --showkeys
+```
 
 License
 -------
