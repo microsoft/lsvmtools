@@ -164,7 +164,7 @@ static BOOLEAN _IsTPMPresent()
     if (TCG2_GetCapability(protocol, &capability) != EFI_SUCCESS)
         return FALSE;
 
-    if (capability.TPMPresentFlag == TRUE)
+    if (capability.TPMPresentFlag != TRUE)
 	return FALSE;
 
     if ((rc = TPM2X_SetDictionaryAttackLockReset(protocol)) != TPM_RC_SUCCESS)

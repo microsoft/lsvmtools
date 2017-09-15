@@ -383,7 +383,7 @@ tests:
 	@ $(MAKE) -s strtok-tests
 	@ $(MAKE) -s test-crypt
 	@ $(MAKE) -s sha-tests
-ifdef ($(HAS_TPM),yes)
+ifeq ($(HAS_TPM),yes)
 	@ $(MAKE) -s test-seal
 	@ $(MAKE) -s lsvmtool-tests
 	@ $(MAKE) -s test-pcrs
@@ -416,3 +416,5 @@ seal:
 	@ echo -n "ABCDEFGHIJKLMNOPQRSTUVWXYZ" > ALPHABET.in
 	$(LSVMTOOL) seallsvmloadpolicy $(BOOTLOADER) ALPHABET.in ALPHABET.out
 
+hastpm:
+	$(BINDIR)/lsvmtool hastpm
