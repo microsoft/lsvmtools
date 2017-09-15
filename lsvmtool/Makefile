@@ -369,6 +369,8 @@ test-pcrs256:
 ##
 ##==============================================================================
 
+HAS_TPM=$(shell $(BINDIR)/lsvmtool hastpm)
+
 tests:
 	@ $(MAKE) -s cpio-tests
 	@ $(MAKE) -s ext2-tests MKE2FSFLAGS="-b 1024"
@@ -381,12 +383,12 @@ tests:
 	@ $(MAKE) -s strtok-tests
 	@ $(MAKE) -s test-crypt
 	@ $(MAKE) -s sha-tests
-
-tpm-tests:
+ifdef ($(HAS_TPM),yes)
 	@ $(MAKE) -s test-seal
 	@ $(MAKE) -s lsvmtool-tests
 	@ $(MAKE) -s test-pcrs
 	@ $(MAKE) -s test-pcrs256
+endif
 
 ##==============================================================================
 ##
