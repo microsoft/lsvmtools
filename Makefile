@@ -185,7 +185,7 @@ grubby:
 	grubby --update-kernel=ALL --config-file=/etc/grub2-efi.cfg
 
 tests:
-	$(MAKE) -s -C lsvmtool autotests
+	$(MAKE) -s -C lsvmtool tests
 
 check: tests
 
