@@ -369,7 +369,7 @@ test-pcrs256:
 ##
 ##==============================================================================
 
-HAS_TPM=$(shell $(BINDIR)/lsvmtool hastpm)
+HAS_TPM=$(shell $(BINDIR)/lsvmtool hastpm 2> /dev/null > /dev/null )
 
 tests:
 	@ $(MAKE) -s cpio-tests
