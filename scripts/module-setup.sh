@@ -29,7 +29,5 @@ install()
 
 installkernel()
 {
-    instmods tpm_crb
-    instmods hyperv-keyboard
-    instmods xts
+    hostonly='' instmods tpm_crb hyperv-keyboard xts
 }
