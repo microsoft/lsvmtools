@@ -136,7 +136,7 @@ int PatchInitrd(
             goto done;
         }
 
-        PutProgress(L"Pathching %a", Str(initrdPath));
+        PutProgress(L"Patching %a", Str(initrdPath));
 
         /* Inject keys into this initrd */
         {

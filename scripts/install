@@ -66,3 +66,7 @@ install_lsvmtool()
 }
 
 install_lsvmtool ${lsvmtool}
+
+echo ""
+echo "Created ${destdirname}"
+echo ""

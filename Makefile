@@ -27,7 +27,6 @@ DIRS = striplic 3rdparty posix lsvmutils lsvmtool lsvmload policy
 
 all:
 	$(foreach i, $(DIRS), $(MAKE) -C $(i) $(NL) )
-	$(MAKE) -C lsvmtool autotests
 
 ##==============================================================================
 ##
@@ -144,12 +143,13 @@ DISTEXCLUDE = \
 
 
 dist:
+	@ rm -rf $(TOP)/$(SRCPKGNAME).tar.gz
 	@ rm -rf $(SRCDIRNAME)
 	@ cp -r $(TOP) $(SRCDIRNAME)
 	@ rm -rf $(DISTEXCLUDE)
 	@ ( cd $(SRCDIRNAME); $(MAKE) -s distclean )
-	@ ( cd /tmp; tar zcf $(SRCPKGNAME).tar.gz $(SRCPKGNAME) )
-	@ echo "Created /tmp/$(SRCPKGNAME).tar.gz"
+	@ ( cd /tmp; tar zcf $(TOP)/$(SRCPKGNAME).tar.gz $(SRCPKGNAME) )
+	@ echo "Created $(TOP)/$(SRCPKGNAME).tar.gz"
 
 ##==============================================================================
 ##

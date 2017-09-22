@@ -124,6 +124,7 @@ static EFI_TCG2_PROTOCOL* _GetTPMProtocol()
         if (!(protocol = TCG2_GetProtocol()))
         {
             fprintf(stderr, "Warning: TCG2_GetProtocol() failed\n");
+	    exit(1);
         }
 
 #if defined(__linux__)
@@ -151,20 +152,25 @@ static EFI_TCG2_PROTOCOL* _GetTPMProtocol()
     return protocol;
 }
 
-static void _TestIsTPMPresent()
+static BOOLEAN _IsTPMPresent()
 {
-    EFI_TCG2_PROTOCOL* protocol = _GetTPMProtocol();
-    EFI_STATUS status;
+    static EFI_TCG2_PROTOCOL* protocol = NULL;
     EFI_TCG2_BOOT_SERVICE_CAPABILITY capability;
+    TPM_RC rc;
 
-    printf("=== TestIsTPMPresent()\n");
+    if (!(protocol = TCG2_GetProtocol()))
+	return FALSE;
 
-    status = TCG2_GetCapability(protocol, &capability);
+    if (TCG2_GetCapability(protocol, &capability) != EFI_SUCCESS)
+        return FALSE;
 
-    if (status != EFI_SUCCESS)
-        assert(0);
+    if (capability.TPMPresentFlag != TRUE)
+	return FALSE;
 
-    assert(capability.TPMPresentFlag == TRUE);
+    if ((rc = TPM2X_SetDictionaryAttackLockReset(protocol)) != TPM_RC_SUCCESS)
+	return FALSE;
+
+    return TRUE;
 }
 
 static void _TestGetTPMRevision()
@@ -2015,7 +2021,6 @@ static int _tests_command(
     const char** argv)
 {
     EFI_TCG2_PROTOCOL* protocol = _GetTPMProtocol();
-    _TestIsTPMPresent(protocol);
     _TestGetTPMRevision(protocol);
 #if !defined(_WIN32)
     _TestSetDictionaryAttackLockReset(protocol);
@@ -4624,6 +4629,29 @@ done:
     return status;
 }
 
+static int _hastpm(
+    int argc,
+    const char **argv)
+{
+    int status = 1;
+
+    if (argc != 1)
+    {
+        fprintf(stderr, "Usage: %s\n", argv[0]);
+        goto done;
+    }
+
+    if (_IsTPMPresent())
+        printf("yes\n");
+    else
+        printf("no\n");
+
+    status = 0;
+
+done: 
+    return status;
+}
+
 /*
 **==============================================================================
 **
@@ -5019,6 +5047,11 @@ static Command _commands[] =
         "Deserializes the specialization file",
         _deserialize_specfile_command,
     },
+    {
+        "hastpm",
+        "Checks whether TPM is present or not",
+        _hastpm,
+    },
 };
 
 static size_t _ncommands = sizeof(_commands) / sizeof(_commands[0]);
@@ -5110,6 +5143,4 @@ int lsvmtool_main(int argc, const char* argv[])
 
     fprintf(stderr, "%s: unknown command: '%s'\n", argv[0], argv[1]);
     return 1;
-
-    return 0;
 }

@@ -64,8 +64,6 @@ LIBRARIES += -lposixlinux
 #LINKFLAGS = -static
 LINKFLAGS = -Wl,-gc-sections
 
-AUTOTESTS=$(TMPDIR)/autotests
-
 CLEAN += $(EXT2)
 CLEAN += $(VFAT)
 CLEAN += $(LSVMCPIO)
@@ -80,7 +78,6 @@ CLEAN += boot.cfg
 CLEAN += lsvmhashes
 CLEAN += initrd.cpio 
 CLEAN += initrd.cpio.gz 
-CLEAN += $(AUTOTESTS)
 
 PROGRAM=lsvmtool
 
@@ -372,6 +369,8 @@ test-pcrs256:
 ##
 ##==============================================================================
 
+HAS_TPM=$(shell $(BINDIR)/lsvmtool hastpm 2> /dev/null > /dev/null )
+
 tests:
 	@ $(MAKE) -s cpio-tests
 	@ $(MAKE) -s ext2-tests MKE2FSFLAGS="-b 1024"
@@ -384,18 +383,12 @@ tests:
 	@ $(MAKE) -s strtok-tests
 	@ $(MAKE) -s test-crypt
 	@ $(MAKE) -s sha-tests
-
-tpm-tests:
+ifeq ($(HAS_TPM),yes)
 	@ $(MAKE) -s test-seal
 	@ $(MAKE) -s lsvmtool-tests
 	@ $(MAKE) -s test-pcrs
 	@ $(MAKE) -s test-pcrs256
-
-$(AUTOTESTS): $(LSVMTOOL)
-	@ $(MAKE) -s tests
-	@ touch $(AUTOTESTS)
-
-autotests: $(AUTOTESTS)
+endif
 
 ##==============================================================================
 ##
@@ -423,3 +416,5 @@ seal:
 	@ echo -n "ABCDEFGHIJKLMNOPQRSTUVWXYZ" > ALPHABET.in
 	$(LSVMTOOL) seallsvmloadpolicy $(BOOTLOADER) ALPHABET.in ALPHABET.out
 
+hastpm:
+	$(BINDIR)/lsvmtool hastpm
