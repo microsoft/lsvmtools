@@ -69,6 +69,14 @@ LSVMLOAD works using unmodified SHIM and GRUB2 executables, making it
 possible to configure a Linux environment for shielding without having
 to change any programs along the boot chain.
 
+Documents
+---------
+
+- [LSVM Overview](doc/LSVM_Overview.pdf)
+
+- [LSVM How-To](doc/LSVM_How_To.pdf)
+
+
 Supported Linux distributions
 -----------------------------
 
