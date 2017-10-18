@@ -16,16 +16,17 @@ Prefix: %{prefix}
 Group: Development/Tools
 
 %description
-The LSVMTools program for shielding VMs for Hyper-V.
+The LSVMTools package is for shielding Hyper-V Linux VMs.
 
 %prep
 %setup -q
+
 %build
 ./configure
 make
 
 %install
-make install DESTDIR=$RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT RELEASE=1
 
 %files
 %defattr(-,root,root)

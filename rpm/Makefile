@@ -33,3 +33,7 @@ build:
 	rpmbuild -v -bb --clean SPECS/lsvmtools.spec
 	@ cp RPMS/x86_64/lsvmtools-1.0.0-1.x86_64.rpm .
 	@ echo "Created lsvmtools-1.0.0-1.x86_64.rpm"
+
+install:
+	rpm -i --nodeps --force lsvmtools-1.0.0-1.x86_64.rpm
+
