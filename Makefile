@@ -106,10 +106,15 @@ bindist: all
 	@ cp -r policy $(BINDIRNAME)/policy
 	@ rm -rf $(BINDIRNAME)/policy/attic
 	@ rm -rf $(BINDIRNAME)/policy/Makefile
-	@ install -D lsvmload/lsvmload.efi $(BINDIRNAME)/lsvmload/lsvmload.efi
+ifdef RELEASE
+	install -D lsvmload/lsvmload.signed.efi $(BINDIRNAME)/lsvmload/lsvmload.efi
+else
+	install -D lsvmload/lsvmload.efi $(BINDIRNAME)/lsvmload/lsvmload.efi
+endif
 	@ cp lsvmprep $(BINDIRNAME)/lsvmprep
 	@ cp sanity $(BINDIRNAME)/sanity
 	@ cp VERSION $(BINDIRNAME)/VERSION
+	@ cp LICENSE $(BINDIRNAME)/LICENSE
 	@ cp scripts/install $(BINDIRNAME)/install
 	@ ( cd /tmp; tar zcf $(BINPKGNAME).tar.gz $(BINPKGNAME) )
 	@ rm -rf $(BINDIRNAME)
@@ -157,11 +162,23 @@ dist:
 ##
 ##==============================================================================
 
-install:
+install: lsvmload
 	$(MAKE) bindist
 	rm -rf $(BINDIRNAME)
 	( cd /tmp; tar zxf $(BINPKGNAME).tar.gz )
 	( cd $(BINDIRNAME); destdir=$(DESTDIR) ./install )
+
+ifdef RELEASE
+lsvmload: ./lsvmload/lsvmload.signed.efi
+else
+lsvmload:
+endif
+
+./lsvmload/lsvmload.signed.efi:
+	@ echo ""
+	@ echo "*** Error: ./lsvmload/lsvmload.signed.efi not found"
+	@ echo ""
+	@ exit 1
 
 ##==============================================================================
 ##
