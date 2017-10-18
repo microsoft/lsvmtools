@@ -19,6 +19,7 @@ clean:
 	rm -rf SOURCES/*
 	rm -rf ./RPMS/x86_64
 	rm -rf BUILD RPMS SOURCES SRPMS
+	rm -f lsvmtools-1.0.0-1.x86_64.rpm
 
 configure:
 	@ ( cd ..; ./configure > /dev/null )
