@@ -110,6 +110,7 @@ bindist: all
 	@ cp lsvmprep $(BINDIRNAME)/lsvmprep
 	@ cp sanity $(BINDIRNAME)/sanity
 	@ cp VERSION $(BINDIRNAME)/VERSION
+	@ cp LICENSE $(BINDIRNAME)/LICENSE
 	@ cp scripts/install $(BINDIRNAME)/install
 	@ ( cd /tmp; tar zcf $(BINPKGNAME).tar.gz $(BINPKGNAME) )
 	@ rm -rf $(BINDIRNAME)

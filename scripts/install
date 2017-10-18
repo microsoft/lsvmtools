@@ -67,6 +67,8 @@ install_lsvmtool()
 
 install_lsvmtool ${lsvmtool}
 
+rm -f ${destdirname}/build/bin/striplic
+
 echo ""
 echo "Created ${destdirname}"
 echo ""
