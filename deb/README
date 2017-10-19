@@ -7,7 +7,7 @@ There are two steps:
 
         lsvmtools/lsvmload/lsvmload.signed.efi
 
-    (2) Type "make" in this directory.
+    (2) Type "RELEASE=1 make" in this directory.
 
 The resulting DEB package will appear in this directory.
 
