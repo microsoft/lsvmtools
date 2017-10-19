@@ -28,7 +28,7 @@ sources:
 	@tar xf $(TARBALL) -C $(DEBDIR)
 
 get-build-deps:
-	@apt-get -qq -y install build-essential devscripts 
+	@apt-get -qq -y install build-essential dh-make devscripts 
 
 build:
 	@cp -r $(BUILDFILES) $(DEBDIR)
