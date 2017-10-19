@@ -1,0 +1,13 @@
+
+This directory contains a Makefile for creating an lsvmtools DEB package.
+
+There are two steps:
+
+    (1) Copy a signed version of LSVMLOAD to:
+
+        lsvmtools/lsvmload/lsvmload.signed.efi
+
+    (2) Type "RELEASE=1 make" in this directory.
+
+The resulting DEB package will appear in this directory.
+
