@@ -31,6 +31,8 @@ make install DESTDIR=$RPM_BUILD_ROOT RELEASE=1
 %files
 %defattr(-,root,root)
 
+%exclude /opt/lsvmtools-1.0.0/scripts/install
+
 %doc %attr(0644,root,root) /opt/lsvmtools-1.0.0/VERSION
 %doc %attr(0644,root,root) /opt/lsvmtools-1.0.0/LICENSE
 
