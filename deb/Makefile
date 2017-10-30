@@ -26,6 +26,7 @@ sources:
 	@$(MAKE) -s -C .. bindist > /dev/null 
 	@mkdir $(DEBDIR)
 	@tar xf $(TARBALL) -C $(DEBDIR)
+	@rm -rf $(DEBDIR)/$(NAME)-$(VERSION)-x86_64/install
 
 get-build-deps:
 	@apt-get -qq -y install build-essential dh-make devscripts 
