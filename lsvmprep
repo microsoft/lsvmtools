@@ -207,8 +207,23 @@ check_root_passphrase()
         exit 1
     fi
 
-    echo -n "passphrase" | cryptsetup luksDump --dump-master-key --key-file=- $rootdev 2> /dev/null > /dev/null
+    # Check whether cryptsetup program exists.
+    if [ ! -x "/sbin/cryptsetup" ]; then
+        echo "$0: ERROR: /sbin/cryptsetup not found"
+        echo ""
+        exit 1
+    fi
 
+    # Check whether root partition is encrypted.
+    /sbin/cryptsetup luksDump $rootdev 2> /dev/null > /dev/null
+    if [ "$?" != "0" ]; then
+        echo "$0: ERROR: The root partition is not a LUKS partition: $rootdev"
+        echo ""
+        exit 1
+    fi
+
+    # Check whether root partition is encrypted with "passprhase"
+    echo -n "passphrase" | /sbin/cryptsetup luksDump --dump-master-key --key-file=- $rootdev 2> /dev/null > /dev/null
     if [ "$?" != "0" ]; then
         echo "$0: ERROR: The root partition passphrase must be 'passphrase'"
         echo ""
