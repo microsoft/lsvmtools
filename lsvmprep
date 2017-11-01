@@ -214,6 +214,13 @@ check_root_passphrase()
         exit 1
     fi
 
+    # Check whether /lib/cryptsetup/askpass program exists.
+    if [ ! -x "/lib/cryptsetup/askpass" ]; then
+        echo "$0: ERROR: /lib/cryptsetup/askpass not found"
+        echo ""
+        exit 1
+    fi
+
     # Check whether root partition is encrypted.
     /sbin/cryptsetup luksDump $rootdev 2> /dev/null > /dev/null
     if [ "$?" != "0" ]; then
