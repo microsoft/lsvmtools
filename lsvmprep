@@ -215,10 +215,12 @@ check_root_passphrase()
     fi
 
     # Check whether /lib/cryptsetup/askpass program exists.
-    if [ ! -x "/lib/cryptsetup/askpass" ]; then
-        echo "$0: ERROR: /lib/cryptsetup/askpass not found"
-        echo ""
-        exit 1
+    if [ "${vendor}" == "ubuntu" ]; then
+        if [ ! -x "/lib/cryptsetup/askpass" ]; then
+            echo "$0: ERROR: /lib/cryptsetup/askpass dependency not found"
+            echo ""
+            exit 1
+        fi
     fi
 
     # Check whether root partition is encrypted.
