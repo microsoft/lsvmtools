@@ -23,7 +23,7 @@ LSVMTools provides two main tools.
 
 ### LSVMPREP
 
-**LSVMPREP** prepares the Linux enviroment for shielding. After the image
+**LSVMPREP** prepares the Linux environment for shielding. After the image
 is prepared, it must be templatized and provisioned as described in the
 [LSVM How-To](doc/LSVM_How_To.pdf) document. LSVMPREP performs the following
 steps.
