@@ -48,44 +48,48 @@ static int _Close(
     return 0;
 }
 
-static int _Get(
+static int _GetN(
     Blkdev* dev,
     UINTN blkno,
+    UINTN nblocks,
     void* data)
 {
     int rc = -1;
     BlkdevImpl* impl = (BlkdevImpl*)dev;
     UINTN offset = blkno * BLKDEV_BLKSIZE;
+    UINTN toRead = nblocks * BLKDEV_BLKSIZE;
 
     if (!dev || !data)
         goto done;
 
-    if (offset + BLKDEV_BLKSIZE >= impl->size)
+    if (offset + toRead >= impl->size)
         goto done;
 
-    Memcpy(data, (const UINT8*)impl->data + offset, BLKDEV_BLKSIZE);
+    Memcpy(data, (const UINT8*)impl->data + offset, toRead);
     rc = 0;
 
 done:
     return rc;
 }
 
-static int _Put(
+static int _PutN(
     Blkdev* dev,
     UINTN blkno,
+    UINTN nblocks,
     const void* data)
 {
     int rc = -1;
     BlkdevImpl* impl = (BlkdevImpl*)dev;
     UINTN offset = blkno * BLKDEV_BLKSIZE;
+    UINTN toWrite = nblocks * BLKDEV_BLKSIZE;
 
     if (!dev || !data)
         goto done;
 
-    if (offset + BLKDEV_BLKSIZE >= impl->size)
+    if (offset + toWrite >= impl->size)
         goto done;
 
-    Memcpy((UINT8*)impl->data + offset, data, BLKDEV_BLKSIZE);
+    Memcpy((UINT8*)impl->data + offset, data, toWrite);
     rc = 0;
 
 done:
@@ -113,8 +117,8 @@ Blkdev* BlkdevFromMemory(
         goto done;
 
     impl->base.Close = _Close;
-    impl->base.Get = _Get;
-    impl->base.Put = _Put;
+    impl->base.GetN = _GetN;
+    impl->base.PutN = _PutN;
     impl->base.SetFlags = _SetFlags;
     impl->data = data;
     impl->size = size;

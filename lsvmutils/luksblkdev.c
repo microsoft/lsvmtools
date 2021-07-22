@@ -76,24 +76,48 @@ done:
     return rc;
 }
 
-static int _Get(
+static int _GetN(
     Blkdev* dev,
     UINTN blkno,
+    UINTN nblocks,
     void* data)
 {
     int rc = -1;
     BlkdevImpl* impl = (BlkdevImpl*)dev;
+    UINTN toRead = nblocks * BLKDEV_BLKSIZE;
+    UINT8* tmp = NULL;
+    Blkdev* rawdev;
+    UINTN startBlkno;
 
     if (!_ValidLUKSBlkdev(dev) || !data || !impl->rawdev || !impl->masterkey)
         goto done;
 
-    /* Read the given block */
-    if (LUKSGetPayloadSector(
-        impl->rawdev, 
-        &impl->header, 
-        impl->masterkey, 
-        blkno, 
-        data) != 0)
+    if (!nblocks)
+    {
+        rc = 0;
+        goto done;
+    }
+
+    /* Allocate memory and read from blk device. */
+    tmp = (UINT8*) Malloc(toRead);
+    if (!tmp)
+        goto done;
+
+    rawdev = impl->rawdev;
+    startBlkno = impl->header.payload_offset + blkno;
+
+    if (rawdev->GetN(rawdev, startBlkno, nblocks, tmp) != 0)
+        goto done;
+
+    /* Call LUKS function to decrypt the data. */
+    if (LUKSCrypt(
+        LUKS_CRYPT_MODE_DECRYPT,
+        &impl->header,
+        impl->masterkey,
+        tmp,
+        data,
+        toRead,
+        blkno) != 0)
     {
         goto done;
     }
@@ -101,36 +125,65 @@ static int _Get(
     rc = 0;
 
 done:
+    if (tmp)
+        Free(tmp);
+
     return rc;
 }
 
-static int _Put(
+static int _PutN(
     Blkdev* dev,
     UINTN blkno,
+    UINTN nblocks,
     const void* data)
 {
     int rc = -1;
     BlkdevImpl* impl = (BlkdevImpl*)dev;
+    UINTN toWrite = nblocks * BLKDEV_BLKSIZE;
+    UINT8* tmp = NULL;
+    Blkdev* rawdev;
+    UINTN startBlkno;
 
     if (!_ValidLUKSBlkdev(dev) || !data || !impl->rawdev || !impl->masterkey)
     {
         goto done;
     }
 
-    /* Write the given block */
-    if (LUKSPutPayloadSector(
-        impl->rawdev, 
-        &impl->header, 
-        impl->masterkey, 
-        blkno, 
-        data) != 0)
+    if (!nblocks)
+    {
+        rc = 0;
+        goto done;
+    }
+
+    /* Allocate memory and encrypt the data. */
+    tmp = (UINT8*) Malloc(toWrite);
+    if (!tmp)
+        goto done;
+
+    if (LUKSCrypt(
+        LUKS_CRYPT_MODE_ENCRYPT,
+        &impl->header,
+        impl->masterkey,
+        data,
+        tmp,
+        toWrite,
+        blkno) != 0)
     {
         goto done;
     }
 
+    /* Write the encrypted data to the device. */
+    rawdev = impl->rawdev;
+    startBlkno = impl->header.payload_offset + blkno;
+    if (rawdev->PutN(rawdev, startBlkno, nblocks, tmp) != 0)
+        goto done;
+
     rc = 0;
 
 done:
+    if (tmp)
+       Free(tmp);
+
     return rc;
 }
 
@@ -176,8 +229,8 @@ Blkdev* LUKSBlkdevFromMasterkey(
 
     /* Initialize the block device */
     impl->base.Close = _Close;
-    impl->base.Put = _Put;
-    impl->base.Get = _Get;
+    impl->base.PutN = _PutN;
+    impl->base.GetN = _GetN;
     impl->rawdev = rawdev;
     impl->magic = LUKSBLKDEV_MAGIC;
     impl->header = header;
@@ -225,8 +278,8 @@ Blkdev* LUKSBlkdevFromRawBytes(
 
     /* Initialize the block device */
     impl->base.Close = _Close;
-    impl->base.Get = _Get;
-    impl->base.Put = _Put;
+    impl->base.GetN = _GetN;
+    impl->base.PutN = _PutN;
     impl->base.SetFlags = _SetFlags;
     impl->magic = LUKSBLKDEV_MAGIC;
     impl->header = header;

@@ -44,14 +44,16 @@ struct _Blkdev
     int (*Close)(
         Blkdev* dev);
 
-    int (*Get)(
+    int (*GetN)(
         Blkdev* dev,
         UINTN blkno,
+        UINTN nblks,
         void* data);
 
-    int (*Put)(
+    int (*PutN)(
         Blkdev* dev,
         UINTN blkno,
+        UINTN nblks,
         const void* data);
 
     int (*SetFlags)(
