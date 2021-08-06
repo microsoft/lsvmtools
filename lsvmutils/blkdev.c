@@ -58,7 +58,7 @@ int BlkdevRead(
         goto done;
     }
 
-    /* If size is aligned to block size, we just do a batch read. */
+    /* If size is a multiple of the block size, we just do a batch read. */
     if (size % BLKDEV_BLKSIZE == 0)
     {
         if (dev->GetN(dev, blkno, nblocks, ptr) != 0)
