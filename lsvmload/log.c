@@ -150,10 +150,9 @@ EFI_STATUS PutLog(
     EFI_STATUS status = EFI_SUCCESS;
     va_list ap;
     CHAR16* wcs = NULL;
+    CHAR16* logLine = NULL;
     char* str = NULL;
     const char *logLevelStr = LogLevelToStr(logLevel);
-    char num[32];
-    char* numStart = &num[sizeof(num)/sizeof(num[0])];
 
     /* Check log level */
     if (logLevel > _logLevel)
@@ -179,52 +178,45 @@ EFI_STATUS PutLog(
         va_end(ap);
     }
 
-    /* Get the time stamp to the log and convert to string. */
+    /* Create the log line. */
     {
-        time_t t = time(NULL) - first;
-
-        /* Format is "[NUM]: ". Work our way backwards. */
-        *--numStart = '\0';
-        *--numStart = ' ';
-        *--numStart = ':';
-        *--numStart = ']';
-        do {
-            *--numStart = '0' + (t % 10);
-            t /= 10;
-        }
-        while (t > 0);
-        *--numStart = '[';
-    }
-
-    /* Convert the string to single-character (ignore special characters) */
-    {
-        /* Log format is "LOGLEVEL: [TIMESTAMP]: MSG" */
         UINTN levelLen = Strlen(logLevelStr);
-        UINTN numLen = Strlen(numStart);
         UINTN msgLen = StrLen(wcs);
-        UINTN i;
+        time_t timestamp = time(NULL) - first;
 
-        /* +2 for the ": " after LOGLEVEL and +2 for the ending "\n\0" */
-        if (!(str = Malloc(sizeof(char) * (levelLen + numLen + msgLen + 4))))
+        /* Format is "LOGLEVEL: [TIMESTAMP]: MSG." Give 32 bytes for timestamp. */
+        UINTN logLineLen = levelLen + 32 + msgLen;
+
+        if (!(logLine = Malloc(sizeof(CHAR16) * logLineLen)))
         {
             status = EFI_OUT_OF_RESOURCES;
             goto done;
         }
 
-        /* Copy the log level first. */
-        Memcpy(str, logLevelStr, levelLen);
-        str[levelLen] = ':';
-        str[levelLen+1] = ' ';
+        SPrint(
+            logLine,
+            sizeof(CHAR16) * logLineLen,
+            L"%a: [%d]: %s\n",
+            logLevelStr,
+            timestamp,
+            wcs);
+    }
 
-        /* Now copy the time stamp. */
-        Memcpy(&str[levelLen+2], numStart, numLen);
+    /* Convert the string to single character (ignore special characters) */
+    {
+        UINTN i;
+        UINTN len = StrLen(logLine);
 
-        /* Now copy the message string. */
-        for (i = 0; i < msgLen; i++)
-            str[levelLen + 2 + numLen + i] = (char)wcs[i];
+        if (!(str = Malloc(sizeof(char) * (len + 1))))
+        {
+            status = EFI_OUT_OF_RESOURCES;
+            goto done;
+        }
 
-        str[levelLen + 2 + numLen + msgLen] = '\n';
-        str[levelLen + 2 + numLen + msgLen + 1] = '\0';
+        for (i = 0; i < len; i++)
+            str[i] = (char) logLine[i];
+
+        str[len] = '\0';
     }
 
     /* Write the string to the log */
@@ -245,6 +237,9 @@ done:
 
     if (str)
         Free(str);
+
+    if (logLine)
+        Free(logLine);
 
     if (wcs)
         Free(wcs);
