@@ -34,8 +34,10 @@
 #include "paths.h"
 #include "console.h"
 #include "globals.h"
+#include <time.h>
 
 static LogLevel _logLevel = INFO;
+static time_t first = (time_t) 0;
 
 void SetLogLevel(
     LogLevel logLevel)
@@ -148,6 +150,7 @@ EFI_STATUS PutLog(
     EFI_STATUS status = EFI_SUCCESS;
     va_list ap;
     CHAR16* wcs = NULL;
+    CHAR16* logLine = NULL;
     char* str = NULL;
     const char *logLevelStr = LogLevelToStr(logLevel);
 
@@ -156,6 +159,10 @@ EFI_STATUS PutLog(
     {
         goto done;
     }
+
+    /* set time for first log entry */
+    if (first == 0)
+       first = time(NULL);
 
     /* Format the string */
     {
@@ -171,35 +178,45 @@ EFI_STATUS PutLog(
         va_end(ap);
     }
 
-    /* Convert the string to single-character (ignore special characters) */
+    /* Create the log line. */
+    {
+        UINTN levelLen = Strlen(logLevelStr);
+        UINTN msgLen = StrLen(wcs);
+        time_t timestamp = time(NULL) - first;
+
+        /* Format is "LOGLEVEL: [TIMESTAMP]: MSG." Give 32 bytes for timestamp. */
+        UINTN logLineLen = levelLen + 32 + msgLen;
+
+        if (!(logLine = Malloc(sizeof(CHAR16) * logLineLen)))
+        {
+            status = EFI_OUT_OF_RESOURCES;
+            goto done;
+        }
+
+        SPrint(
+            logLine,
+            sizeof(CHAR16) * logLineLen,
+            L"%a: [%d]: %s\n",
+            logLevelStr,
+            timestamp,
+            wcs);
+    }
+
+    /* Convert the string to single character (ignore special characters) */
     {
         UINTN i;
-        UINTN len = StrLen(wcs);
+        UINTN len = StrLen(logLine);
 
-        if (!(str = Malloc(sizeof(char) * (len + 2))))
+        if (!(str = Malloc(sizeof(char) * (len + 1))))
         {
             status = EFI_OUT_OF_RESOURCES;
             goto done;
         }
 
         for (i = 0; i < len; i++)
-            str[i] = (char)wcs[i];
+            str[i] = (char) logLine[i];
 
-        str[len] = '\n';
-        str[len+1] = '\0';
-    }
-
-    /* Write the log level to the log */
-    {
-        if ((status = _WriteLog(logLevelStr)) != EFI_SUCCESS)
-        {
-            goto done;
-        }
-
-        if ((status = _WriteLog(": ")) != EFI_SUCCESS)
-        {
-            goto done;
-        }
+        str[len] = '\0';
     }
 
     /* Write the string to the log */
@@ -220,6 +237,9 @@ done:
 
     if (str)
         Free(str);
+
+    if (logLine)
+        Free(logLine);
 
     if (wcs)
         Free(wcs);

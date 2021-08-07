@@ -33,6 +33,7 @@
 #include <lsvmutils/luksblkdev.h>
 #include "luksbio.h"
 #include "globals.h"
+#include "log.h"
 
 int TestRootDevice(
     EFI_HANDLE imageHandle,
@@ -65,6 +66,7 @@ int TestRootDevice(
         goto done;
     }
 
+    LOGD(L"TestRootDevice::LUKSBlkdevFromRawBytes");
     /* Wrap 'cache device' in 'LUKS device' */
     if (!(rootdev = LUKSBlkdevFromRawBytes(
         rawdev, 

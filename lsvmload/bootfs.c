@@ -90,6 +90,7 @@ Blkdev* GetBootDevice(
 #endif
 
     /* Wrap 'cache device' in 'LUKS device' */
+    LOGD(L"GetBootDevice::LUKSBlkdevFromRawBytes");
     if (!(bootdev = LUKSBlkdevFromRawBytes(
         cachedev, 
         masterkeyData,
@@ -118,7 +119,8 @@ EXT2* OpenBootFS(
     Blkdev* bootdev = NULL;
     EXT2* ext2 = NULL;
 
-    /* Get the boot device (sets globals.bootdev) */
+    /* Get the boot device (sets globals.bootdev) */ 
+    LOGD(L"OpenBootFS::GetBootDevice");
     if (!(bootdev = GetBootDevice(
         imageHandle, 
         tcg2Protocol,
@@ -130,6 +132,7 @@ EXT2* OpenBootFS(
     }
 
     /* Open the EXT2 file system */
+    LOGD(L"OpenBootFS::EXT2New");
     if (EXT2New(bootdev, &ext2) != EXT2_ERR_NONE)
     {
         LOGE(L"EXT2New() failed");
@@ -137,7 +140,6 @@ EXT2* OpenBootFS(
     }
 
 done:
-
     return ext2;
 }
 
@@ -171,6 +173,7 @@ EFI_STATUS LoadFileFromBootFS(
     }
 
     /* Lookup inode for this path */
+    LOGD(L"LoadFileFromBootFS::EXT2PathToInode");
     if (EXT2PathToInode(bootfs, path, NULL, &inode) != EXT2_ERR_NONE)
     {
         LOGD(L"%a(): file not found: %a", __FUNCTION__, path);
@@ -178,6 +181,7 @@ EFI_STATUS LoadFileFromBootFS(
     }
 
     /* Load the file into memory */
+    LOGD(L"LoadFileFromBootFS::EXT2LoadFileFromInode");
     if (EXT2LoadFileFromInode(
         bootfs, 
         &inode, 

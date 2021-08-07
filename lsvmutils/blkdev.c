@@ -40,9 +40,9 @@ int BlkdevRead(
 {
     int rc = -1;
     UINTN nblocks;
-    UINTN i;
     UINT8* ptr;
     UINTN rem;
+    UINT8 block[BLKDEV_BLKSIZE];
 
     if (!dev || !data)
         goto done;
@@ -51,20 +51,35 @@ int BlkdevRead(
     ptr = (UINT8*)data;
     rem = size;
 
-    for (i = blkno; rem > 0 && i < blkno + nblocks; i++)
+    /* Nothing to do. */
+    if (nblocks == 0)
     {
-        UINT8 block[BLKDEV_BLKSIZE];
-        UINTN n;
+        rc = 0;
+        goto done;
+    }
 
-        if (dev->Get(dev, i, block) != 0)
+    /* If size is a multiple of the block size, we just do a batch read. */
+    if (size % BLKDEV_BLKSIZE == 0)
+    {
+        if (dev->GetN(dev, blkno, nblocks, ptr) != 0)
             goto done;
 
-        n = rem < BLKDEV_BLKSIZE ? rem : BLKDEV_BLKSIZE;
-
-        Memcpy(ptr, block, n);
-        ptr += n;
-        rem -= n;
+        rc = 0;
+        goto done;
     }
+
+    /* Otherwise, we can only read n-1 blocks to avoid overflow. */
+    if (dev->GetN(dev, blkno, nblocks - 1, ptr) != 0)
+        goto done;
+
+    ptr += (nblocks - 1) * BLKDEV_BLKSIZE;
+    rem -= (nblocks - 1) * BLKDEV_BLKSIZE;
+
+    /* Read the last block and copy the remaining bytes to ptr. */
+    if (dev->GetN(dev, blkno + nblocks - 1, 1, block) != 0)
+        goto done;
+
+    Memcpy(ptr, block, rem);
 
     rc = 0;
 
@@ -80,37 +95,49 @@ int BlkdevWrite(
 {
     int rc = -1;
     UINTN nblocks;
-    UINTN i;
     const UINT8* ptr;
     UINTN rem;
+    UINT8 block[BLKDEV_BLKSIZE];
 
     if (!dev || !data)
         goto done;
 
     nblocks = (size + BLKDEV_BLKSIZE - 1) / BLKDEV_BLKSIZE;
-    ptr = (UINT8*)data;
+    ptr = (const UINT8*)data;
     rem = size;
 
-    for (i = blkno; rem > 0 && i < blkno + nblocks; i++)
+    /* Nothing to do. */
+    if (nblocks == 0)
     {
-        UINT8 block[BLKDEV_BLKSIZE];
-        UINTN n;
-
-        /* Read the existing block */
-        if (dev->Get(dev, i, block) != 0)
-            goto done;
-
-        /* Update this block */
-        n = rem < BLKDEV_BLKSIZE ? rem : BLKDEV_BLKSIZE;
-        Memcpy(block, ptr, n);
-
-        /* Rewrite the block */
-        if (dev->Put(dev, i, block) != 0)
-            goto done;
-
-        ptr += n;
-        rem -= n;
+        rc = 0;
+        goto done;
     }
+
+    /* If size is aligned to block size, we just do a batch write. */
+    if (size % BLKDEV_BLKSIZE == 0)
+    {
+        if (dev->PutN(dev, blkno, nblocks, ptr) != 0)
+            goto done;
+
+        rc = 0;
+        goto done;
+    }
+
+    /* Otherwise, we can only write nblocks - 1 blocks without overflow. */
+    if (dev->PutN(dev, blkno, nblocks - 1, ptr) != 0)
+        goto done;
+
+    ptr += (nblocks - 1) * BLKDEV_BLKSIZE;
+    rem -= (nblocks - 1) * BLKDEV_BLKSIZE;
+
+    /* Read the last block and rewrite part of it. */
+    if (dev->GetN(dev, blkno + nblocks - 1, 1, block) != 0)
+        goto done;
+
+    Memcpy(block, ptr, rem);
+
+    if (dev->PutN(dev, blkno + nblocks - 1, 1, block) != 0)
+        goto done;
 
     rc = 0;
 

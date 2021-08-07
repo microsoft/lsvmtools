@@ -77,15 +77,11 @@ done:
 }
 
 static int _Get(
-    Blkdev* dev,
+    BlkdevImpl* impl,
     UINTN blkno,
     void* data)
 {
     int rc = -1;
-    BlkdevImpl* impl = (BlkdevImpl*)dev;
-
-    if (!impl || !data || !impl->bio)
-        goto done;
 
     /* Use the cache for single block reads */
     {
@@ -127,9 +123,53 @@ done:
     return rc;
 }
 
-static int _Put(
+static int _GetN(
     Blkdev* dev,
     UINTN blkno,
+    UINTN nblocks,
+    void* data)
+{
+    int rc = -1;
+    BlkdevImpl* impl = (BlkdevImpl*)dev;
+
+    if (!impl || !data || !impl->bio)
+        goto done;
+
+    if (!nblocks)
+    {
+        rc = 0;
+        goto done;
+    }
+
+    /* Do normal _Get on <= CACHE_SIZE reads to use the cache. */
+    if (nblocks <= CACHE_SIZE)
+    {
+        UINTN i;
+        UINT8* ptr = (UINT8*) data;
+        for (i = 0; i < nblocks; i++)
+        {
+            if (_Get(impl, blkno + i, ptr + i*BLKDEV_BLKSIZE) != 0)
+                goto done;
+        }
+
+        rc = 0;
+        goto done;
+    }
+
+    /* Otherwise, do a full block read. */
+    if (ReadBIO(impl->bio, blkno, data, nblocks * BLKDEV_BLKSIZE) != EFI_SUCCESS)
+        goto done;
+
+    rc = 0;
+
+done:
+    return rc;
+}
+
+static int _PutN(
+    Blkdev* dev,
+    UINTN blkno,
+    UINTN nblocks,
     const void* data)
 {
     int rc = -1;
@@ -138,7 +178,13 @@ static int _Put(
     if (!impl || !data || !impl->bio)
         goto done;
 
-    if (WriteBIO(impl->bio, blkno, data, BLKDEV_BLKSIZE) != EFI_SUCCESS)
+    if (!nblocks)
+    {
+        rc = 0;
+        goto done;
+    }
+
+    if (WriteBIO(impl->bio, blkno, data, nblocks * BLKDEV_BLKSIZE) != EFI_SUCCESS)
         goto done;
 
     rc = 0;
@@ -167,8 +213,8 @@ Blkdev* BlkdevFromBIO(
         goto done;
 
     impl->base.Close = _Close;
-    impl->base.Get = _Get;
-    impl->base.Put = _Put;
+    impl->base.GetN = _GetN;
+    impl->base.PutN = _PutN;
     impl->base.SetFlags = _SetFlags;
     impl->bio = bio;
 

@@ -64,6 +64,7 @@ int GetInitrdPath(
         const CHAR16 PATH1[] = L"/grub2/grub.cfg";
         const CHAR16 PATH2[] = L"/grub/grub.cfg";
 
+        LOGD(L"GetInitrdPath::LoadFileFromBootFS");
         if (LoadFileFromBootFS(
             globals.imageHandle,
             globals.tcg2Protocol,
@@ -92,6 +93,7 @@ int GetInitrdPath(
     }
 
     /* Get the initrd path from grub.cfg */
+    LOGD(L"GetInitrdPath::GRUBCfgFindInitrd");
     if (GRUBCfgFindInitrd(
         globals.grubcfgData, 
         globals.grubcfgSize, 
@@ -144,6 +146,7 @@ int PatchInitrd(
             WcsStrlcpy(wcs, initrdPath, ARRSIZE(wcs));
 
             /* Try to load the file from the bootfs */
+            LOGD(L"Patchinitrd::LoadFileFromBootFS");
             if (LoadFileFromBootFS(
                 imageHandle,
                 tcg2Protocol,
@@ -164,6 +167,7 @@ int PatchInitrd(
                 BENCH( posix_time_t t = posix_time(NULL); )
 
                 /* Inject the keys into the bootfs and remove keyboard driver */
+                LOGD(L"PatchInitrd::InitrdInjectFiles");
                 if (InitrdInjectFiles(
                     initrdData,
                     initrdSize,
@@ -187,6 +191,7 @@ int PatchInitrd(
                     BENCH( posix_time_t t = posix_time(NULL); )
 
                     /* Remove original initrd */
+                    LOGD(L"PatchInitrd::EXT2Rm");
                     if (EXT2Rm(bootfs, initrdPath) != EXT2_ERR_NONE)
                     {
                         LOGE(L"failed to remove %s", Wcs(wcs));
@@ -198,7 +203,7 @@ int PatchInitrd(
 
                 {
                     BENCH( posix_time_t t = posix_time(NULL); )
-
+                    LOGD(L"PatchInitrd::EXT2Put");
                     /* Create new initrd */
                     if (EXT2Put(
                         bootfs, 
@@ -218,8 +223,6 @@ int PatchInitrd(
             LOGI(L"Injected keys into initrd: %s", Wcs(wcs));
         }
     }
-
-
 
     rc = 0;
 

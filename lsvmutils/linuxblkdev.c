@@ -120,24 +120,32 @@ static ssize_t _Writen(
     return size;
 }
 
-static int _Get(
+static int _GetN(
     Blkdev* dev,
     UINTN blkno,
+    UINTN nblocks,
     void* data)
 {
     int rc = -1;
     BlkdevImpl* impl = (BlkdevImpl*)dev;
     UINTN offset;
+    UINTN toRead = nblocks * BLKDEV_BLKSIZE;
 
     if (!dev || !data)
         goto done;
+
+    if (!nblocks)
+    {
+        rc = 0;
+        goto done;
+    }
 
     offset = impl->offset + blkno * BLKDEV_BLKSIZE;
 
     if (lseek(impl->fd, offset, SEEK_SET) != offset)
         goto done;
 
-    if (_Readn(impl->fd, data, BLKDEV_BLKSIZE) != BLKDEV_BLKSIZE)
+    if (_Readn(impl->fd, data, toRead) != toRead)
         goto done;
 
     rc = 0;
@@ -146,24 +154,32 @@ done:
     return rc;
 }
 
-static int _Put(
+static int _PutN(
     Blkdev* dev,
     UINTN blkno,
+    UINTN nblocks,
     const void* data)
 {
     int rc = -1;
     BlkdevImpl* impl = (BlkdevImpl*)dev;
     UINTN offset;
+    UINTN toWrite = nblocks * BLKDEV_BLKSIZE;
 
     if (!dev || !data)
         goto done;
+
+    if (!nblocks)
+    {
+        rc = 0;
+        goto done;
+    }
 
     offset = impl->offset + blkno * BLKDEV_BLKSIZE;
 
     if (lseek(impl->fd, offset, SEEK_SET) != offset)
         goto done;
 
-    if (_Writen(impl->fd, data, BLKDEV_BLKSIZE) != BLKDEV_BLKSIZE)
+    if (_Writen(impl->fd, data, toWrite) != toWrite)
         goto done;
 
     rc = 0;
@@ -206,8 +222,8 @@ Blkdev* BlkdevOpen(
         goto done;
 
     impl->base.Close = _Close;
-    impl->base.Get = _Get;
-    impl->base.Put = _Put;
+    impl->base.GetN = _GetN;
+    impl->base.PutN = _PutN;
     impl->base.SetFlags = _SetFlags;
     impl->offset = offset;
     impl->fd = fd;
