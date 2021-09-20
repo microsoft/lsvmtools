@@ -69,16 +69,18 @@ EFI_STATUS LocateBlockIOHandles(
     }
 
     /* Locate the handle for the BLOCK_IO_PROTOCOL */
-    if ((status = uefi_call_wrapper(
-        BS->LocateHandle, 
-        5,
-        ByProtocol, /* SearchType */
-        &_guid, /* Protocol */
-        0, /* SearchKey (none) */
-        &bufferSize,
-        buffer)) != EFI_SUCCESS)
+    status = uefi_call_wrapper(
+		    BS->LocateHandle, 
+        	    5,
+        	    ByProtocol, /* SearchType */
+        	    &_guid, /* Protocol */
+        	    0, /* SearchKey (none) */
+        	    &bufferSize,
+        	    buffer);
+
+    if (status != EFI_SUCCESS && status != EFI_BUFFER_TOO_SMALL)
     {
-        goto done;
+    	    goto done;
     }
 
     /* If buffer is too small */
