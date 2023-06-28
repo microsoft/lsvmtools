@@ -491,7 +491,7 @@ int vfat_main(
 
         if (offset == 0)
         {
-            fprintf(stderr, "%s: failed to resolve parition\n", argv[0]);
+            fprintf(stderr, "%s: failed to resolve partition\n", argv[0]);
             return 1;
         }
     }

@@ -599,7 +599,7 @@ EFI_STATUS LoadPrefixedFile(
     /* Check for "boot:" prefix */
     if (StrnCmp(path, L"boot:", 5) == 0)
     {
-        /* Try to open the BIO for the LUKS parition */
+        /* Try to open the BIO for the LUKS partition */
         if (!bootfs)
         {
             LOGE(L"boot partition unavailable");

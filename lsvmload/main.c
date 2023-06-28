@@ -214,7 +214,7 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *systemTable)
 
     PutProgress(L"Checking boot partition");
 
-    /* Try to unlock the boot parition with the unsealed bootkey */
+    /* Try to unlock the boot partition with the unsealed bootkey */
     while (globals.bootkeyData)
     {
         /* Open the boot file system */
@@ -224,7 +224,7 @@ EFI_STATUS efi_main(EFI_HANDLE imageHandle, EFI_SYSTEM_TABLE *systemTable)
             globals.bootkeyData,
             globals.bootkeySize)) != EFI_SUCCESS)
         {
-            LOGE(L"failed to open the boot parition");
+            LOGE(L"failed to open the boot partition");
             Free(globals.bootkeyData);
             globals.bootkeyData = NULL;
             globals.bootkeySize = 0;

@@ -788,7 +788,7 @@ BOOLEAN LUKSMatchHeader(
     /* Fix the byte order of the hader */
     LUKSFixByteOrder(&u.header);
 
-    /* If unsealed key is the wrong size it is from wrong parition */
+    /* If unsealed key is the wrong size it is from wrong partition */
     if (masterkeySize != u.header.key_bytes)
         goto done;
 
@@ -837,7 +837,7 @@ int LUKSFindBootDevice(
     if (LoadGPT(path, &gpt) != 0)
         goto done;
 
-    /* Try each parition */
+    /* Try each partition */
     for (i = 0; i < GPT_MAX_ENTRIES && gpt.entries[i].typeGUID1; i++)
     {
         char devname[32];

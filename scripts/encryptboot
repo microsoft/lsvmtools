@@ -35,7 +35,7 @@ patch_crypttab()
     ### Fail is this is not a LUKS device:
     cryptsetup isLuks $luksdev
     if [ "$?" != "0" ]; then
-        echo "$0: $FUNCNAME(): not a LUKS parition: $luksdev"
+        echo "$0: $FUNCNAME(): not a LUKS partition: $luksdev"
         exit 1
     fi
 
@@ -182,7 +182,7 @@ backup_boot_directory()
 ##
 ## luks_format(bootdev)
 ##
-##     Reformat the boot parition as a LUKS partition.
+##     Reformat the boot partition as a LUKS partition.
 ##
 ##==============================================================================
 
@@ -255,14 +255,14 @@ if [ "$?" != "0" ]; then
     exit 1
 fi
 
-### Mount new EXT2 parition:
+### Mount new EXT2 partition:
 mount /dev/mapper/boot /boot
 if [ "$?" != "0" ]; then
     echo "$0: failed to mount /dev/mapper/boot"
     exit 1
 fi
 
-### Copy files to new parition:
+### Copy files to new partition:
 ( cd /boot.backup; tar cf - boot ) | (cd /; tar xf - )
 
 ### Remount the ESP:
