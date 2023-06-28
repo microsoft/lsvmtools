@@ -69,10 +69,10 @@ typedef struct _Globals
     /* UUID of the root device */
     char rootDevice[GUID_STRING_SIZE];
 
-    /* BIO for LUKS boot parition */
+    /* BIO for LUKS boot partition */
     EFI_BIO* bootbio;
 
-    /* LUKS block device for boot parition */
+    /* LUKS block device for boot partition */
     Blkdev* bootdev;
 
     /* Cache device that bootdev uses */

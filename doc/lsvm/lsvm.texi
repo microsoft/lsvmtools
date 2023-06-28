@@ -62,7 +62,7 @@ directly modifying the virtual disk file.
 @item Replacing the secondary boot loader (e.g., GRUB2)
 @item Replacing the Linux kernel
 @item Modifying the intial ramdisk
-@item Modifying the root parition
+@item Modifying the root partition
 @end itemize
 
 This document explains how LSVM utilizes the capabilities above to provide a

@@ -223,7 +223,7 @@ int MapEFIVFAT(
     /* Apply patches to grub.cfg */
     GrubcfgPatch(globals.grubcfgData, globals.grubcfgSize);
 
-    /* Create "/EFI/<VENDOR-EFI-DIR>/GRUB.CFG" file in embedded-VFAT parition */
+    /* Create "/EFI/<VENDOR-EFI-DIR>/GRUB.CFG" file in embedded-VFAT partition */
     {
         /* Create a memory block device to be used by VFAT */
         if (!(memdev = BlkdevFromMemory((void*)efivfat, efivfat_size)))

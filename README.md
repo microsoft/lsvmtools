@@ -29,7 +29,7 @@ is prepared, it must be templatized and provisioned as described in the
 steps.
 
 - Encrypts the boot partition with a well-known passphrase
-- Patches the system to automatically mount the encyrpted boot parition
+- Patches the system to automatically mount the encyrpted boot partition
 - Installs LSVMLOAD on the EFI System Partition (ESP)
 - TPM-seals the passphrases and stores them on the ESP
 - Copies the SHIM and GRUB2 to the encrypted boot partition

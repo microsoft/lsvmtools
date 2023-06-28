@@ -215,7 +215,7 @@ EFI_DEVICE_PATH* DevPathCreatePseudoPartition(
                     Memcpy(&hd, &tmp, sizeof(hd));
                 }
 
-                /* Save the highest parition number found so far */
+                /* Save the highest partition number found so far */
                 if (tmp.partitionNumber > hd.partitionNumber)
                     hd.partitionNumber = tmp.partitionNumber;
 
@@ -232,7 +232,7 @@ EFI_DEVICE_PATH* DevPathCreatePseudoPartition(
     if (!result)
         goto done;
 
-    /* Assign the next available parition number */
+    /* Assign the next available partition number */
     hd.partitionNumber++;
 
     /* Assign sector start and size */

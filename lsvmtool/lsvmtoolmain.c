@@ -3669,7 +3669,7 @@ static int _partuuid_command(
     }
     else
     {
-        fprintf(stderr, "%s: unable to resolve parition UUID\n", argv[0]);
+        fprintf(stderr, "%s: unable to resolve partition UUID\n", argv[0]);
         goto done;
     }
 
@@ -4966,7 +4966,7 @@ static Command _commands[] =
     },
     {
         "partuuid",
-        "Find the UUID for this parition",
+        "Find the UUID for this partition",
         _partuuid_command,  
     },
     {

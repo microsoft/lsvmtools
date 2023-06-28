@@ -169,7 +169,7 @@ EFI_STATUS WrapBootBIO(
         goto done;
     }
 
-    /* Copy over media from LUKS parition */
+    /* Copy over media from LUKS partition */
     Memcpy(
         &_block_io.media, 
         globals.bootbio->blockIO->Media, 
@@ -224,7 +224,7 @@ EFI_STATUS WrapBootBIO(
     }
 #endif
 
-    /* Allocate device path for this new parition */
+    /* Allocate device path for this new partition */
     if (!(dp = DevPathCreatePseudoPartition(
         _block_io.media.LastBlock,
         &guid,
@@ -272,7 +272,7 @@ EFI_STATUS WrapBootBIO(
         }
     }
 
-    /* Add this new parition to the GPT */
+    /* Add this new partition to the GPT */
     if (AddPartition(L"BOOTFS", &guid, firstLBA, lastLBA) != 0)
     {
         LOGE(L"WrapBootBIO(): AddPartition() failed");
